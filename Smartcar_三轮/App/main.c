@@ -42,9 +42,14 @@ void pit0_irq(void)
   led_turn(LED1);
     lose_line_deal(adc_value, adc_value[0]-adc_value[3], left_lossline_Range, right_lossline_Range);
     Speed_calulate();
-    Speed_PidControl(g_set_speed,g_real_speed);
+    Speed_PIControl(g_set_speed,g_real_speed);
     Dir_PdControl();
     Motor_control();
+	if (key_get(Switch1) == 0)
+	{
+		get_sensor_threshold_normalization();
+		OLED_P6x8Str(0, 0, "read threshold");
+	}
     PIT_Flag_Clear(PIT0); //清中断标志位
     led_turn(LED1); 
 }
@@ -106,9 +111,6 @@ void main(void)
         adc_value[1] = adc_once(ADC_CH1, ADC_10bit);
         adc_value[2] = adc_once(ADC_CH2, ADC_10bit);
         adc_value[3] = adc_once(ADC_CH3, ADC_10bit);
-       // position = adc_value[0]-adc_value[3];
-		//ftm_pwm_duty(FTM2, FTM_CH1, 150);
-		//ftm_pwm_duty(FTM2, FTM_CH2, 150);
     }
 }
 

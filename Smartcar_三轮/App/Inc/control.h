@@ -17,19 +17,14 @@ extern struct pid speed,dir;
 
 /*FTMÕ¼¿Õ±È*/
 //#define CH0_Duty
-unsigned char Key_check (unsigned char key);
-unsigned char Key_Scan(void);
-void Key_init(void);
 void Speed_calulate(void);
 void Encoder_init(void);
-void Speed_PidControl(int set_speed,int real_speed);
 void Dir_PdControl(void);
-void Adc_Init(void);
-uint8 switch_read(void);
 void Motor_control(void);
-void Speed_PidControl(int set_speed,int real_speed);
+void Speed_PIControl(int set_speed,int real_speed);
 void Dir_PdControl(void);
 int ADC_deal(int *adcValue);
+unsigned char Key_Scan(void);
 
 void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange);
 int get_sensor_threshold_normalization(void);

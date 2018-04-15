@@ -19,7 +19,7 @@ u8 SOLGUI_CSR=0;		//占用标志寄存器（若非零即表示占用，不能退
 extern CURSOR *cursor;	//光标记载
 extern char KEY_NUM;
 extern int adc_value[4],g_base_speed,g_set_speed,dutyMax;
-extern int position,loss_line,g_rightThrottle,g_leftThrottle;
+extern int position,loss_line,g_rightThrottle,g_leftThrottle,g_real_speed;
 //extern struct pid dir;
 MENU_PAGE UI_MENU;
 MENU_PAGE EDIT,DISPLAY;
@@ -35,7 +35,7 @@ __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 			 SOLGUI_Widget_OptionText(4, "ADC1:%d", adc_value[1]);
 			 SOLGUI_Widget_OptionText(5, "ADC2:%d", adc_value[2]);
 			 SOLGUI_Widget_OptionText(6, "ADC3:%d", adc_value[3]);
-			 SOLGUI_Widget_OptionText(7, "position=%d", position);
+			 SOLGUI_Widget_OptionText(7, "realspeed=%d", g_real_speed);
 			 SOLGUI_Widget_OptionText(8, "dir.err=%d", adc_value[3] - adc_value[0]);
 			 SOLGUI_Widget_OptionText(9, "SpeedL=%d", motorEncorderL);
 			 SOLGUI_Widget_OptionText(10, "SpeedR=%d", motorEncorderR);
@@ -44,16 +44,18 @@ __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 
 __M_PAGE(EDIT,"Edit",&UI_MENU,
 {
-	SOLGUI_Cursor(6, 0, 8);
+	SOLGUI_Cursor(6, 0, 10);
 	SOLGUI_Widget_Spin(0,"baseSpeed",INT32,200,0,&g_base_speed);
     SOLGUI_Widget_Spin(1,"SetSpeed",INT32,200,0,&g_set_speed);
-	SOLGUI_Widget_Spin(2,"dirKp",FLT16,100,0,&dir.Kp);
-	SOLGUI_Widget_Spin(3,"dirKd",FLT16,100,0,&dir.Kd);
-    SOLGUI_Widget_Spin(4,"DutyMax",INT32,1000,0,&dutyMax);
-	SOLGUI_Widget_Spin(5,"leftThr",INT32,1000,0,&g_leftThrottle);
-	SOLGUI_Widget_Spin(6,"g_rightthr",INT32,1000,0,&g_rightThrottle);
+	SOLGUI_Widget_Spin(2, "spKp", FLT16, 100, 0, &speed.Kp);
+	SOLGUI_Widget_Spin(3, "spKd", FLT16, 100, 0, &speed.Ki);
+	SOLGUI_Widget_Spin(4,"dirKp",FLT16,100,0,&dir.Kp);
+	SOLGUI_Widget_Spin(5,"dirKd",FLT16,100,0,&dir.Kd);
+    SOLGUI_Widget_Spin(6,"DutyMax",INT32,1000,0,&dutyMax);
+	SOLGUI_Widget_Spin(7,"leftThr",INT32,1000,0,&g_leftThrottle);
+	SOLGUI_Widget_Spin(8,"rightthr",INT32,1000,0,&g_rightThrottle);
 //	SOLGUI_Widget_Spin(2,"dirKd",FLT16,200,0,&(dir+2));
-	SOLGUI_Widget_GotoPage(7,&UI_MENU);
+	SOLGUI_Widget_GotoPage(9,&UI_MENU);
 
   
 });
