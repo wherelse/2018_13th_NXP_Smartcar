@@ -30,7 +30,7 @@ int key_value = 0;
 char KEY_NUM;
 int position;
 int left_lossline_Range = 10, right_lossline_Range=10;
-extern int g_real_speed,g_set_speed,loseline;
+extern int g_real_speed,g_set_speed,loseline,normalization_threshold[4];
 
 /*
   本例程用到中断，需要在 MKEA128_it.h 文件里添加：
@@ -39,10 +39,12 @@ extern int g_real_speed,g_set_speed,loseline;
 */
 void pit0_irq(void)
 {
-  led_turn(LED1);
-    lose_line_deal(adc_value, adc_value[0]-adc_value[3], left_lossline_Range, right_lossline_Range);
+	led_turn(LED1);
     Speed_calulate();
     Speed_PIControl(g_set_speed,g_real_speed);
+//	get_sensor_threshold_normalization();
+    Senser_normalization(adc_value);
+	lose_line_deal(adc_value, adc_value[0] - adc_value[3], left_lossline_Range, right_lossline_Range);
     Dir_PdControl();
     Motor_control();
 	if (key_get(Switch1) == 0)
@@ -111,6 +113,7 @@ void main(void)
         adc_value[1] = adc_once(ADC_CH1, ADC_10bit);
         adc_value[2] = adc_once(ADC_CH2, ADC_10bit);
         adc_value[3] = adc_once(ADC_CH3, ADC_10bit);
+		if (key_get(Switch4) == 0) OLED_Fill(0x00);
     }
 }
 

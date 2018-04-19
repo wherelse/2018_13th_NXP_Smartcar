@@ -24,10 +24,11 @@ void Motor_control(void);
 void Speed_PIControl(int set_speed,int real_speed);
 void Dir_PdControl(void);
 int ADC_deal(int *adcValue);
-unsigned char Key_Scan(void);
+unsigned char Key_Scan(void);	
 
 void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange);
-int get_sensor_threshold_normalization(void);
 void sensorValue_get(int * sensor_value);
 void Sensor_init(void);
+void get_sensor_threshold_normalization(void);
+void Senser_normalization(int * sensor_value);
 #endif

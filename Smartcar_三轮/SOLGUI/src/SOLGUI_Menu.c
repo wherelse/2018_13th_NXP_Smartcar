@@ -19,7 +19,7 @@ u8 SOLGUI_CSR=0;		//占用标志寄存器（若非零即表示占用，不能退
 extern CURSOR *cursor;	//光标记载
 extern char KEY_NUM;
 extern int adc_value[4],g_base_speed,g_set_speed,dutyMax;
-extern int position,loss_line,g_rightThrottle,g_leftThrottle,g_real_speed;
+extern int position,loss_line,g_real_speed, left_lossline_Range , right_lossline_Range , loselinespeed ;
 //extern struct pid dir;
 MENU_PAGE UI_MENU;
 MENU_PAGE EDIT,DISPLAY;
@@ -46,16 +46,16 @@ __M_PAGE(EDIT,"Edit",&UI_MENU,
 {
 	SOLGUI_Cursor(6, 0, 10);
 	SOLGUI_Widget_Spin(0,"baseSpeed",INT32,200,0,&g_base_speed);
-    SOLGUI_Widget_Spin(1,"SetSpeed",INT32,200,0,&g_set_speed);
-	SOLGUI_Widget_Spin(2, "spKp", FLT16, 100, 0, &speed.Kp);
-	SOLGUI_Widget_Spin(3, "spKd", FLT16, 100, 0, &speed.Ki);
-	SOLGUI_Widget_Spin(4,"dirKp",FLT16,100,0,&dir.Kp);
-	SOLGUI_Widget_Spin(5,"dirKd",FLT16,100,0,&dir.Kd);
-    SOLGUI_Widget_Spin(6,"DutyMax",INT32,1000,0,&dutyMax);
-	SOLGUI_Widget_Spin(7,"leftThr",INT32,1000,0,&g_leftThrottle);
-	SOLGUI_Widget_Spin(8,"rightthr",INT32,1000,0,&g_rightThrottle);
-//	SOLGUI_Widget_Spin(2,"dirKd",FLT16,200,0,&(dir+2));
-	SOLGUI_Widget_GotoPage(9,&UI_MENU);
+        SOLGUI_Widget_Spin(1,"SetSpeed",INT32,200,0,&g_set_speed);
+	SOLGUI_Widget_Spin(2, "losespeed", INT32, 1000, 0,&loselinespeed);
+	SOLGUI_Widget_Spin(3, "spKp", FLT16, 100, 0, &speed.Kp);
+	SOLGUI_Widget_Spin(4, "spKd", FLT16, 100, 0, &speed.Ki);
+	SOLGUI_Widget_Spin(5,"dirKp",FLT16,100,0,&dir.Kp);
+	SOLGUI_Widget_Spin(6,"dirKd",FLT16,100,0,&dir.Kd);
+        SOLGUI_Widget_Spin(7,"DutyMax",INT32,1000,0,&dutyMax);
+	SOLGUI_Widget_Spin(8,"leftThr",INT32,1000,0,&left_lossline_Range);
+	SOLGUI_Widget_Spin(9,"rightthr",INT32,1000,0,&right_lossline_Range);
+	SOLGUI_Widget_GotoPage(10,&UI_MENU);
 
   
 });

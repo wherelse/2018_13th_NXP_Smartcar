@@ -8,15 +8,15 @@
 #define ADC_CH3 ADC0_SE15
 
 int motorEncorderL=0,motorEncorderR=0;
-int g_base_speed=40,g_real_speed=0,g_set_speed=40,speedMax=200,dutyMax=600;
-int g_leftThrottle=80,g_rightThrottle=80,loss_line=0;
+int g_base_speed=40,g_real_speed=0,g_set_speed=40,speedMax=200,dutyMax=600,loselinespeed=300;
+int loss_line=0;
 extern char KEY_NUM;
 extern int adc_value[4];
 
 struct pid speed = {-4.5,-0.1,0,0,0,0,0};
 struct pid dir = {2,2,0,0,0,0,0};
 
-int normalization_threshold[4];
+int normalization_threshold[4]={100,100,100,100};
 
 unsigned char Key_Scan(void)
 {
@@ -86,6 +86,38 @@ void Motor_control(void)
 	dutyR = g_base_speed + speed.pidout + dir.pidout;
 	dutyL = g_base_speed + speed.pidout - dir.pidout;
 
+
+	//if (loss_line == 2)
+	//{
+	//	dutyL = -50;
+	//	dutyR = dutyMax - 100;
+	//}
+	//if (loss_line == 1)
+	//{
+	//	dutyL = dutyMax - 50;
+	//	dutyR = -50;
+	//}
+
+	static int change = 50;
+	if (loss_line == 0)
+	{
+		change = 50;
+	}
+	if (loss_line == 1)
+	{
+		dutyL = loselinespeed;
+		dutyR = -change;
+		change += 5;
+		if (change > dutyMax)change = dutyMax;
+	}
+	if (loss_line == 2)
+	{
+		dutyL = -change;
+		dutyR = loselinespeed;
+		change += 5;
+		if (change > dutyMax)change = dutyMax;
+	}
+
 	if (dutyL > dutyMax)
 		dutyL = dutyMax;
 	if (dutyL < (-dutyMax))
@@ -95,17 +127,6 @@ void Motor_control(void)
 		dutyR = dutyMax;
 	if (dutyR < (-dutyMax))
 		dutyR = -dutyMax;
-
-	if (loss_line == 2)
-	{
-		dutyL = -250;
-		dutyR = dutyMax - 100;
-	}
-	if (loss_line == 1)
-	{
-		dutyL = dutyMax - 100;
-		dutyR = -250;
-	}
 
 	if (dutyL < 0)
 	{
@@ -135,7 +156,7 @@ void Motor_control(void)
 	}
         else
         {
-                ftm_pwm_duty(FTM2, FTM_CH2, 0);
+        ftm_pwm_duty(FTM2, FTM_CH2, 0);
 		ftm_pwm_duty(FTM2, FTM_CH3, 0);
         }
 }
@@ -163,9 +184,13 @@ void Speed_PIControl(int set_speed,int real_speed)
 */
 void Dir_PdControl(void)
 {
+	static float pid_out_last=0;
 	dir.err = adc_value[0]-adc_value[3];//ADC_deal(adc_value);
 	dir.pidout = dir.Kp * dir.err + dir.Kd * (dir.err - dir.err_last);
 	dir.err_last = dir.err;
+	//if (dir.pidout > 0 && pid_out_last < 0)dir.pidout = pid_out_last + 10;
+	//else if (dir.pidout < 0 && pid_out_last>0)dir.pidout = pid_out_last - 10;
+	//else pid_out_last = dir.pidout;
 }
 
 void Sensor_init(void)
@@ -191,6 +216,8 @@ int ADC_deal(int * adcValue)
 	return position;
 }
 
+
+
 void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 {
 	static int error_add[3] = {0, 0, 0}, loss_line_inc;
@@ -204,14 +231,14 @@ void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 	error_add[0] = position;								  //数组首位为处理后误差
 	error_tatal = error_add[0] + error_add[1] + error_add[2]; //三次误差值的和
 	sensor_value_all = adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3];
-	if ((g_leftThrottle > sensor_value_all) || (g_rightThrottle < fabs(sensor_value_all)) && (adc_value[0]<10||adc_value[3]<10))//判断电感值是否小于丢线阈值
+	if (((leftRange > sensor_value_all) || (rightRange < sensor_value_all) )&& (adc_value[0]<10||adc_value[3]<10))//判断电感值是否小于丢线阈值
 	{
-		if ((error_tatal > 0) && (loss_line == 0) && (g_leftThrottle > sensor_value_all))
+		if ((error_tatal > 0) && (loss_line == 0) && (leftRange > sensor_value_all))
 			{
 				loss_line = 2;
                 loss_line_lock=1;
 			}
-		else if ((error_tatal < 0) && (loss_line == 0) && (g_rightThrottle < fabs(sensor_value_all) ))
+		else if ((error_tatal < 0) && (loss_line == 0) && (rightRange > sensor_value_all ))
 			{
 				loss_line = 1;
                 loss_line_lock=1;
@@ -239,7 +266,7 @@ void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 	}
 }
 
-int get_sensor_threshold_normalization(void)
+void get_sensor_threshold_normalization(void)
 {
 	int sensor_value_now[4] = { 0,0,0,0 };
 	static int sensor_value_last[4] = { 0,0,0,0 };
@@ -255,8 +282,9 @@ int get_sensor_threshold_normalization(void)
 	for (int i = 0; i < 4; i++)
 	{
 		sensor_value_last[i] = sensor_value_now[i];
+		normalization_threshold[i] = sensor_value_max[i];
 	}
-
+	
 }
 
 void sensorValue_get(int * sensor_value)
@@ -273,7 +301,7 @@ void sensorValue_get(int * sensor_value)
 *   sensor_value_normal   归一化后数据
 *   sensor_value       归一化前数据
 */
-void Senser_normalization(uint16 * sensor_value)
+void Senser_normalization(int * sensor_value)
 {
 	sensor_value[0] = (int)((sensor_value[0] / (float)(normalization_threshold[0])) * 100);
 	sensor_value[1] = (int)((sensor_value[1] / (float)(normalization_threshold[1])) * 100);
