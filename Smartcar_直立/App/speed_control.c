@@ -7,13 +7,13 @@
 * @date		2017
 */
 float RealSpeed = 0;
-float ExpectSpeed = 11;
+float ExpectSpeed = 0;
 float SpeedErr = 0;
 float SpeedErrorTemp[5];
 float SpeedOut = 0;
-float SpeedOutNew = 0; 
+float SpeedOutNew = 0;
 float SpeedOutOld = 0;
-float Speed_Kp = 20;
+float Speed_Kp = 30;
 int Flag_SpeedControl = 0;
 void CalSpeedError(void)
 {
@@ -27,7 +27,7 @@ void CalSpeedError(void)
 	else
 		SpeedFilter = ((fSpeedNew - fSpeedOld) < -3 ? (fSpeedOld - 3) : fSpeedNew);
 
-	SpeedErr = ExpectSpeed - SpeedFilter;
+	SpeedErr = ExpectSpeed - RealSpeed;
 
 	SpeedErrorTemp[4] = SpeedErrorTemp[3];
 	SpeedErrorTemp[3] = SpeedErrorTemp[2];
@@ -47,7 +47,10 @@ void SpeedControl(void)
 {
 	//	static float fSpeedErrorDot = 0;
 	CalSpeedError();
-	SpeedErr = (SpeedErr > 10 ? 10 : SpeedErr);//速度偏差限幅
+	if (SpeedErr > 0)
+		SpeedErr = (SpeedErr > 10 ? 10 : SpeedErr);//速度偏差限幅
+	else
+		SpeedErr = (SpeedErr < -10 ? -10 : SpeedErr);//速度偏差限幅
 	vcan_send_buff[3] = SpeedErr;  //速度偏差
 	SpeedOutOld = SpeedOutNew;
 	SpeedOutNew = Speed_Kp * SpeedErr;
@@ -55,6 +58,6 @@ void SpeedControl(void)
 
 void SpeedControlOut(void)
 {
-	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 10 +
+	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 20 +
 		SpeedOutOld;
 }

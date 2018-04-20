@@ -23,20 +23,23 @@ extern int adc_value[4];
 MENU_PAGE UI_MENU;
 __M_PAGE(UI_MENU,"SmartCar",PAGE_NULL,
 {
-  SOLGUI_Cursor(6,0,13);
+  SOLGUI_Cursor(6,0,16);
   SOLGUI_Widget_OptionText(0, "keynum:%d" , KEY_NUM);
   SOLGUI_Widget_OptionText(1, "ADC0:%d"   , adc_value[0]);
   SOLGUI_Widget_OptionText(2, "ADC1:%d"   , adc_value[1]);
   SOLGUI_Widget_OptionText(3, "ADC2:%d"   , adc_value[2]);
   SOLGUI_Widget_OptionText(4, "ADC3:%d"   , adc_value[3]);
-  SOLGUI_Widget_OptionText(5, "SpeedL=%d" , motorEncorderL);
-  SOLGUI_Widget_OptionText(6, "SpeedR=%d" , motorEncorderR);
+  SOLGUI_Widget_Spin(5, "SKp", FLT16, -100, 100, &Speed_Kp);
+  SOLGUI_Widget_Spin(6, "Speed", FLT16, -100, 100, &ExpectSpeed);
   SOLGUI_Widget_OptionText(7, "Angle=%f", g_AngleOfCar);
   SOLGUI_Widget_Spin(8, "BKp", FLT16, -100, 100, &Balance_Kp);
   SOLGUI_Widget_Spin(9, "BKd", FLT16, -100, 100, &Balance_Kd);
-  SOLGUI_Widget_Spin(10, "DKp", FLT16, -100, 100, &DirKp);
-  SOLGUI_Widget_Spin(11, "DKd", FLT16, -100, 100, &DirKd);
-  SOLGUI_Widget_OptionText(12, "DirOut=%f", DirOut);
+  SOLGUI_Widget_Spin(10, "BIKp", FLT16, -100, 100, &Balance_Inside_Kp);
+  SOLGUI_Widget_Spin(11, "BIKd", FLT16, -100, 100, &Balance_Inside_Kd);
+  SOLGUI_Widget_Spin(12, "offset", FLT16, -10000, 10000, &angle_offset);
+  SOLGUI_Widget_Spin(13, "SpeedOut", FLT16, -100, 100, &SpeedOut);
+  SOLGUI_Widget_Spin(14, "DKp", FLT16, -100, 100, &DirKp);
+  SOLGUI_Widget_Spin(15, "DKd", FLT16, -100, 100, &DirKd);
 });
 
 //##############################【内部使用】##############################

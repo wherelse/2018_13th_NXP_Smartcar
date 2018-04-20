@@ -37,23 +37,38 @@ float vcan_send_buff[4]; //山外上位机虚拟示波器
   #define PIT_CH0_IRQHandler  pit0_irq
   表示pit通道0的中断函数为pit0_irq
 */
+int flag_run = 1;
 void pit0_irq(void)
 {
-	led_turn(LED0); //闪烁 LED3
-	Speed_calulate();
-	Get_AccData();
-	Get_Gyro();
-	KalmanFilter();
-	BalanceControl();
-	/*if(++Flag_SpeedControl>5)
+	static int index = 0;
+	if(++index>5)
 	{
-		Flag_SpeedControl = 0;
-		SpeedControl();
+		led_turn(LED0); //闪烁 LED3
+		Get_AccData();
+		Get_Gyro();
+		KalmanFilter();
+                Dir_Control();
+		if(++Flag_SpeedControl>20)
+		{
+			Flag_SpeedControl = 0;
+			Speed_calulate();
+			SpeedControl();
+		}
+		if(flag_run==1)
+		{
+                  
+			Right_Motor_Control(Balance_Inside_Out - SpeedOut-DirOut);
+			Left_Motor_Control(Balance_Inside_Out - SpeedOut+DirOut);
+		}
+		else
+		{
+			Right_Motor_Control(0);
+			Left_Motor_Control(0);
+		}
+		SpeedControlOut();
+		
 	}
-	SpeedControlOut();*/
-	Right_Motor_Control(Balance_Out);
-	Left_Motor_Control(Balance_Out);
-	Dir_Control();
+	BalanceControl();
 	PIT_Flag_Clear(PIT0); //清中断标志位
 }
 void pit1_irq(void)
@@ -100,7 +115,7 @@ void main(void)
 	
 	led_init(LED0);
 	Encoder_init();
-	pit_init_ms(PIT0, 8);
+	pit_init_ms(PIT0, 1);
 	pit_init_ms(PIT1, 100);
 	enable_irq(PIT_CH0_IRQn);  
 	enable_irq(PIT_CH1_IRQn);
@@ -118,8 +133,13 @@ void main(void)
 		adc_value[1] = adc_once(ADC0_SE13, ADC_10bit);
 		adc_value[2] = adc_once(ADC0_SE14, ADC_10bit);
 		adc_value[3] = adc_once(ADC0_SE15, ADC_10bit);
-		vcan_send_buff[0] = g_AngleOfCar;
-		//vcan_sendware((uint8_t *)vcan_send_buff, sizeof(vcan_send_buff));
+		if (adc_value[0] == 0 && adc_value[1]==0 && adc_value[2]==0 && adc_value[3]==0)
+                  flag_run = 0;
+                else
+                  flag_run=1;
+		//if(g_AngleOfCar>300|| g_AngleOfCar<-800 )flag_run = 0;
+		//vcan_send_buff[0] = g_AngleOfCar;
+		vcan_sendware((uint8_t *)vcan_send_buff, sizeof(vcan_send_buff));
 	}
 }
 

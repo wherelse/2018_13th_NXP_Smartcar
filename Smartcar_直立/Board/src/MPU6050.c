@@ -38,9 +38,9 @@ void Get_AccData(void)
     uint8 dat[6];
     
     simiic_read_regs(MPU6050_DEV_ADDR, ACCEL_XOUT_H, dat, 6, IIC);  
-    //mpu_acc_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
+    mpu_acc_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
     mpu_acc_y = (int16)(((uint16)dat[2]<<8 | dat[3]));
-   // mpu_acc_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
+    mpu_acc_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
 }
 
 
@@ -56,9 +56,9 @@ void Get_Gyro(void)
     uint8 dat[6];
     
     simiic_read_regs(MPU6050_DEV_ADDR, GYRO_XOUT_H, dat, 6, IIC);  
-    //mpu_gyro_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
+    mpu_gyro_x = (int16)(((uint16)dat[0]<<8 | dat[1]));
     mpu_gyro_y = (int16)(((uint16)dat[2]<<8 | dat[3]));
-    //mpu_gyro_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
+    mpu_gyro_z = (int16)(((uint16)dat[4]<<8 | dat[5]));
 }
 
 

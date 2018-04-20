@@ -5,5 +5,9 @@ void BalanceControl(void);
 
 extern float Balance_Kp;
 extern float Balance_Kd;
-extern float Balance_Out;
+extern float Balance_Out; 
+extern float Balance_Inside_Kp;
+extern float Balance_Inside_Kd;
+extern float Balance_Inside_Out; 
+extern float Balance_Err, Balance_LastErr;
 #endif

@@ -11,7 +11,7 @@
 extern float g_AngleOfCar;
 extern float angle_offset;
 extern int AngleSpeed;
-
+extern int AngleAccel;
 /**********º¯ÊıÉêÃ÷********/
 void KalmanFilter(void);
 

@@ -1,0 +1,15 @@
+"D:\Study_Work\IAR\main\arm\bin\armproc.dll" 
+
+"D:\Study_Work\IAR\main\arm\bin\armjlink2.dll" 
+
+"E:\2018飞卡\smart_car\2018_13th_NXP_Smartcar\Smartcar_直立\Prj\IAR\KEA128_Debug\Exe\vcan_Kinetis.out" 
+
+--plugin "D:\Study_Work\IAR\main\arm\bin\armbat.dll" 
+
+--device_macro "D:\Study_Work\IAR\main\arm\config\debugger\NXP\KExx.dmac" 
+
+--flash_loader "E:\2018飞卡\smart_car\2018_13th_NXP_Smartcar\Smartcar_直立\Prj\IAR\config files\FlashKE04Z128_4.board" 
+
+
+
+

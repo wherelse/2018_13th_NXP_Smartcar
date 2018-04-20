@@ -27,13 +27,13 @@ int offset_AngleSpeed = 0;
 int AngleAccel = 0;
 int offset_AngleAccel = 0;
 //非矩阵卡尔曼滤波
-float Peried = 1 / 125.0;
+float Peried = 1 / 200.0;
 float KalmanGain = 1.0;//卡尔曼增益
 float Q = 10; //2.0;//过程噪声2.0		越小积分越慢，跟踪加速度计越慢越平滑
-float R = 400;//5000.0;//测量噪声5000.0	越小跟踪加速度计越快
+float R = 2000;//5000.0;//测量噪声5000.0	越小跟踪加速度计越快
 float g_AngleOfCar;
 
-float angle_offset=-3760;
+float angle_offset=-3620;
 /*
 			  Z轴
 				\ ↗
@@ -57,7 +57,7 @@ void KalmanFilter(void)
 	static float Posterior_Estimation = 0;//后验估计
 	static float Priori_Convariance = 0;//先验方差
 	static float Posterior_Convariance = 0;//后验方差
-	AngleSpeed = mpu_gyro_y - offset_AngleSpeed;
+	AngleSpeed = mpu_gyro_x - offset_AngleSpeed;
 	AngleAccel = mpu_acc_y - offset_AngleAccel;
 	//卡尔曼滤波
 	//1.时间更新(预测) : X(k|k-1) = A(k,k-1)*X(k-1|k-1) + B(k)*u(k) 
@@ -77,7 +77,7 @@ void KalmanFilter(void)
 	//得到最终角度 
 	g_AngleOfCar = Posterior_Estimation + angle_offset;
 	vcan_send_buff[2] = Posterior_Estimation;
-
+        vcan_send_buff[3] = AngleSpeed;
 }
 
 
