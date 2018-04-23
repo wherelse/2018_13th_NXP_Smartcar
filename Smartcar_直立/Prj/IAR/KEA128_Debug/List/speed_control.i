@@ -13980,6 +13980,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15639,11 +15640,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15744,11 +15818,25 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
 
 
@@ -15763,21 +15851,28 @@ float SpeedErrorTemp[5];
 float SpeedOut = 0;
 float SpeedOutNew = 0;
 float SpeedOutOld = 0;
-float Speed_Kp = 30;
+float Speed_Kp = 0;
 int Flag_SpeedControl = 0;
+
+
+
+
+
+ 
 void CalSpeedError(void)
 {
-	static float fSpeedOld = 0, SpeedFilter = 0;
-	const float fSpeedNew = (motorEncorderL + motorEncorderR)*0.5;				
-	RealSpeed = fSpeedNew;														
-	fSpeedOld = SpeedFilter;
+	static float speed_old = 0, speed_filter = 0;
+	const float speed_new = (motorEncorderL + motorEncorderR)*0.5;				
+	RealSpeed = speed_new;														
+	speed_old = speed_filter;
 
-	if (fSpeedNew >= fSpeedOld)
-		SpeedFilter = ((fSpeedNew - fSpeedOld) > 3 ? (fSpeedOld + 3) : fSpeedNew);
+	
+	if (speed_new >= speed_old)
+		speed_filter = ((speed_new - speed_old) > 10 ? (speed_old + 10) : speed_new);
 	else
-		SpeedFilter = ((fSpeedNew - fSpeedOld) < -3 ? (fSpeedOld - 3) : fSpeedNew);
+		speed_filter = ((speed_new - speed_old) < -10 ? (speed_old - 10) : speed_new);
 
-	SpeedErr = ExpectSpeed - RealSpeed;
+	SpeedErr = ExpectSpeed - RealSpeed; 
 
 	SpeedErrorTemp[4] = SpeedErrorTemp[3];
 	SpeedErrorTemp[3] = SpeedErrorTemp[2];
@@ -15801,13 +15896,18 @@ void SpeedControl(void)
 		SpeedErr = (SpeedErr > 10 ? 10 : SpeedErr);
 	else
 		SpeedErr = (SpeedErr < -10 ? -10 : SpeedErr);
-	vcan_send_buff[3] = SpeedErr;  
+	vcan_send_buff[3] = SpeedErr; 
 	SpeedOutOld = SpeedOutNew;
 	SpeedOutNew = Speed_Kp * SpeedErr;
 }
 
+
+
+
+
+ 
 void SpeedControlOut(void)
 {
-	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 20 +
+	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 10 +
 		SpeedOutOld;
 }

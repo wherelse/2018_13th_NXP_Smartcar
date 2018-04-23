@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="KEA128_Debug|Win32">
       <Configuration>KEA128_Debug</Configuration>
@@ -11,24 +11,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\App\balance_control.c" />
+    <ClCompile Include="..\App\Attitude_Calculation.c">
+    </ClCompile>
+    <ClCompile Include="..\App\balance_control.c">
+    </ClCompile>
     <ClCompile Include="..\App\control.c">
     </ClCompile>
-    <ClCompile Include="..\App\dir_control.c" />
+    <ClCompile Include="..\App\dir_control.c">
+    </ClCompile>
     <ClCompile Include="..\App\main.c">
     </ClCompile>
     <ClCompile Include="..\App\MKEA128_conf.c">
     </ClCompile>
     <ClCompile Include="..\App\MKEA128_it.c">
     </ClCompile>
-    <ClCompile Include="..\App\motor_control.c" />
+    <ClCompile Include="..\App\motor_control.c">
+    </ClCompile>
     <ClCompile Include="..\App\sensor.c">
     </ClCompile>
-    <ClCompile Include="..\App\speed_control.c" />
+    <ClCompile Include="..\App\speed_control.c">
+    </ClCompile>
+    <ClCompile Include="..\Board\src\BMX055.c">
+    </ClCompile>
     <ClCompile Include="..\Board\src\IIC.c">
     </ClCompile>
     <ClCompile Include="..\Board\src\MPU6050.c">
     </ClCompile>
+    <ClCompile Include="..\Board\src\myiic.c" />
     <ClCompile Include="..\Board\src\VCAN_ASCII.c">
     </ClCompile>
     <ClCompile Include="..\Board\src\VCAN_computer.c">
@@ -117,9 +126,10 @@
     </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6FAE9335-01EE-4A55-7D17-C27F57D98ADF}</ProjectGuid>
+    <ProjectGuid>{F5EC34DB-4C93-4137-4587-97BBCBE0CCD8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vcan_Kinetis</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='KEA128_Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -159,6 +169,12 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props">
   </Import>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='KEA128_Debug|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='KEA128_Release|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props">
   </Import>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets">

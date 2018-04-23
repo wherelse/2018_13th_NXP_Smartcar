@@ -35,5 +35,8 @@
 #include "motor_control.h"
 #include "balance_control.h"
 #include "dir_control.h"
+#include "BMX055.h"
+#include "Attitude_Calculation.h"
+#include "myiic.h"
 extern float vcan_send_buff[4]; //山外上位机虚拟示波器
 #endif  //__INCLUDE_H__

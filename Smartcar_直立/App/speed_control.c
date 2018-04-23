@@ -13,21 +13,28 @@ float SpeedErrorTemp[5];
 float SpeedOut = 0;
 float SpeedOutNew = 0;
 float SpeedOutOld = 0;
-float Speed_Kp = 30;
+float Speed_Kp = 0;
 int Flag_SpeedControl = 0;
+/*
+ @ 作者:邓
+ @ 功能介绍 计算速度偏差
+ @ 参数:
+ @ null
+*/
 void CalSpeedError(void)
 {
-	static float fSpeedOld = 0, SpeedFilter = 0;
-	const float fSpeedNew = (motorEncorderL + motorEncorderR)*0.5;				//真实速度
-	RealSpeed = fSpeedNew;														//速度采集梯度平滑，每次采集最大变化200
-	fSpeedOld = SpeedFilter;
+	static float speed_old = 0, speed_filter = 0;
+	const float speed_new = (motorEncorderL + motorEncorderR)*0.5;				
+	RealSpeed = speed_new;														//真实速度
+	speed_old = speed_filter;
 
-	if (fSpeedNew >= fSpeedOld)
-		SpeedFilter = ((fSpeedNew - fSpeedOld) > 3 ? (fSpeedOld + 3) : fSpeedNew);
+	//限制变化速率
+	if (speed_new >= speed_old)
+		speed_filter = ((speed_new - speed_old) > 10 ? (speed_old + 10) : speed_new);
 	else
-		SpeedFilter = ((fSpeedNew - fSpeedOld) < -3 ? (fSpeedOld - 3) : fSpeedNew);
+		speed_filter = ((speed_new - speed_old) < -10 ? (speed_old - 10) : speed_new);
 
-	SpeedErr = ExpectSpeed - RealSpeed;
+	SpeedErr = ExpectSpeed - RealSpeed; 
 
 	SpeedErrorTemp[4] = SpeedErrorTemp[3];
 	SpeedErrorTemp[3] = SpeedErrorTemp[2];
@@ -51,13 +58,18 @@ void SpeedControl(void)
 		SpeedErr = (SpeedErr > 10 ? 10 : SpeedErr);//速度偏差限幅
 	else
 		SpeedErr = (SpeedErr < -10 ? -10 : SpeedErr);//速度偏差限幅
-	vcan_send_buff[3] = SpeedErr;  //速度偏差
+	vcan_send_buff[3] = SpeedErr; 
 	SpeedOutOld = SpeedOutNew;
 	SpeedOutNew = Speed_Kp * SpeedErr;
 }
-
+/*
+ @ 作者:邓
+ @ 功能介绍 速度平滑控制，一次速度输出分为10次变化
+ @ 参数:
+ @ null
+*/
 void SpeedControlOut(void)
 {
-	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 20 +
+	SpeedOut = (SpeedOutNew - SpeedOutOld)*Flag_SpeedControl / 10 +
 		SpeedOutOld;
 }

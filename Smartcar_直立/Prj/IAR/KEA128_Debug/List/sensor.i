@@ -13989,6 +13989,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15648,11 +15649,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15762,15 +15836,35 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
  
-int AngleSpeed = 0;
+float AngleSpeed = 0;
 int offset_AngleSpeed = 0;
+float g_AngleOfCar;
+BMX055Datatypedef      BMX055_data;
+
+EulerAngleTypedef      SystemAttitude;            
+EulerAngleTypedef      SystemAttitudeRate;        
+AttitudeDatatypedef    GyroOffset;
 
 int AngleAccel = 0;
 int offset_AngleAccel = 0;
@@ -15779,9 +15873,9 @@ float Peried = 1 / 200.0;
 float KalmanGain = 1.0;
 float Q = 10; 
 float R = 2000;
-float g_AngleOfCar;
 
-float angle_offset=-3620;
+
+float angle_offset=9;
 
 
 
@@ -15816,14 +15910,14 @@ void KalmanFilter(void)
 	KalmanGain = (float)sqrt(Priori_Convariance * Priori_Convariance / (Priori_Convariance * Priori_Convariance + R * R));
 	
 
-	vcan_send_buff[1] = AngleAccel;
+	
 
 	Posterior_Estimation = Priori_Estimation + KalmanGain * (AngleAccel - Priori_Estimation);
 	
 	Posterior_Convariance = (float)sqrt((1 - KalmanGain) * Priori_Convariance * Priori_Convariance);
 	
 	g_AngleOfCar = Posterior_Estimation + angle_offset;
-	vcan_send_buff[2] = Posterior_Estimation;
+	
         vcan_send_buff[3] = AngleSpeed;
 }
 

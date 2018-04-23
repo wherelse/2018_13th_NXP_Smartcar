@@ -13,6 +13,7 @@
 
 
 
+
  
 
 
@@ -13971,6 +13972,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15630,11 +15632,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15744,20 +15819,40 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
-float Balance_Kp = 5.4;
-float Balance_Kd = -0.38;
+
+float Balance_Kp = 75;
+float Balance_Kd = 3;
 float Balance_Out = 0;
-float Balance_Inside_Kp = 0.1;
+
+float Balance_Inside_Kp = 0;
 float Balance_Inside_Kd = 0;
 float Balance_Inside_Out = 0;
 float Balance_Err, Balance_LastErr, Balance_Inside_Err, Balance_Inside_LastErr;
 float AngleSpeed_Old;
+float g_upstandControl_PWMTemp[5];
+
+int IsAttitudeinit = 0;
+float AccZAngle = 0, QZAngle = 0;
 
 
 
@@ -15766,36 +15861,74 @@ float AngleSpeed_Old;
  
 void BalanceControl(void)
 {
-	
-	
-	
-	static int index = 0;
-	
-	
-	
-	
-	
-	
-	
-	
-	if(++index>5)
+	float fPWM = ((g_AngleOfCar * Balance_Kp) + (AngleSpeed * Balance_Kd));
+	g_upstandControl_PWMTemp[4] = g_upstandControl_PWMTemp[3];
+	g_upstandControl_PWMTemp[3] = g_upstandControl_PWMTemp[2];
+	g_upstandControl_PWMTemp[2] = g_upstandControl_PWMTemp[1];
+	g_upstandControl_PWMTemp[1] = g_upstandControl_PWMTemp[0];
+	g_upstandControl_PWMTemp[0] = fPWM;
+	Balance_Out = fPWM;
+}
+
+
+
+
+
+ 
+void GetAngle()
+{
+	static int MAGcnt = 0;
+	MAGcnt++;
+	if (MAGcnt < 15)
 	{
-		index = 0;
-		Balance_Out = ((-g_AngleOfCar * Balance_Kp) + (AngleSpeed * Balance_Kd));
+		BMX055_DataRead(&BMX055_data, 0);
 	}
-	Balance_Inside_LastErr = Balance_Inside_Err;
-	Balance_Inside_Err = 0.3*Balance_Inside_LastErr + 0.7*(Balance_Out-AngleSpeed);
-	Balance_Inside_Out = Balance_Inside_Err * Balance_Inside_Kp + (Balance_Inside_Err- Balance_Inside_LastErr)* Balance_Inside_Kd;
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	else
+	{
+		BMX055_DataRead(&BMX055_data, 1);
+	}
+	BMX055_data.GYROXdata = (BMX055_data.GYROXdata - 0) * 0.030517578;
+	BMX055_data.GYROYdata = (BMX055_data.GYROYdata - 0) * 0.030517578;
+	BMX055_data.GYROZdata = (BMX055_data.GYROZdata - 0) * 0.030517578;
+
+	BMX055_data.ACCXdata *= 0.001953125;    
+	BMX055_data.ACCYdata *= 0.001953125;
+	BMX055_data.ACCZdata *= 0.001953125;
+
+	Acc.Xdata = BMX055_data.ACCXdata;
+	Acc.Ydata = BMX055_data.ACCYdata;
+	Acc.Zdata = BMX055_data.ACCZdata;
+	Gyro.Xdata = BMX055_data.GYROXdata;
+	Gyro.Ydata = BMX055_data.GYROYdata;
+	Gyro.Zdata = BMX055_data.GYROZdata;
+
+	if (IsAttitudeinit == 0)
+	{
+		Quaternion_init();                    
+		IsAttitudeinit = 1;
+	}
+	else
+	{
+		Attitude_UpdateGyro();                
+		Attitude_UpdateAcc();                 
+		SystemAttitude.Pitch = -EulerAngle.Roll / 3.14159265358979f * 180;         
+		SystemAttitude.Roll = EulerAngle.Pitch / 3.14159265358979f * 180;
+		SystemAttitude.Yaw = EulerAngle.Yaw / 3.14159265358979f * 180;
+		SystemAttitudeRate.Pitch = -EulerAngleRate.Roll / 3.14159265358979f * 180;  
+		SystemAttitudeRate.Yaw = EulerAngleRate.Yaw / 3.14159265358979f * 180;   
+																  
+
+		float AccZ = 0, AccZAdjust = 0;
+		AccZ = -Acc.Zdata;
+		if (AccZ > 1)
+			AccZ = 1;
+		if (AccZ < -1)
+			AccZ = -1;
+		AccZAngle = asinf(AccZ) * 180 / 3.14159265358979f;
+		QZAngle = SystemAttitude.Pitch;
+		AccZAdjust = (AccZAngle - SystemAttitude.Pitch);
+		SystemAttitude.Pitch += (-Gyro.Xdata + AccZAdjust) * 0.005;
+		g_AngleOfCar = SystemAttitude.Pitch + angle_offset;
+		AngleSpeed = SystemAttitudeRate.Pitch;
+	}
 }

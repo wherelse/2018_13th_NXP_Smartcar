@@ -13976,6 +13976,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15600,11 +15601,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15714,11 +15788,25 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
 
 
@@ -15774,34 +15862,34 @@ uint8 IIC_num;
 
 void simiic_delay(void)
 {
-	
+    
     
     uint16 j=0;   
-	while(j--);
+    while(j--);
 }
 
 
 
 void IIC_start(void)
 {
-	gpio_set (PTH3, 1);
-	gpio_set (PTH4, 1);
-	simiic_delay();
-	gpio_set (PTH3, 0);
-	simiic_delay();
-	gpio_set (PTH4, 0);
+    gpio_set (PTH3, 1);
+    gpio_set (PTH4, 1);
+    simiic_delay();
+    gpio_set (PTH3, 0);
+    simiic_delay();
+    gpio_set (PTH4, 0);
 }
 
 
 void IIC_stop(void)
 {
-	gpio_set (PTH3, 0);
-	gpio_set (PTH4, 0);
-	simiic_delay();
-	gpio_set (PTH4, 1);
-	simiic_delay();
-	gpio_set (PTH3, 1);
-	simiic_delay();
+    gpio_set (PTH3, 0);
+    gpio_set (PTH4, 0);
+    simiic_delay();
+    gpio_set (PTH4, 1);
+    simiic_delay();
+    gpio_set (PTH3, 1);
+    simiic_delay();
 }
 
 
@@ -15809,8 +15897,8 @@ void IIC_stop(void)
 void I2C_SendACK(unsigned char ack_dat)
 {
     gpio_set (PTH4, 0);
-	simiic_delay();
-	if(ack_dat) gpio_set (PTH3, 0);
+    simiic_delay();
+    if(ack_dat) gpio_set (PTH3, 0);
     else    	gpio_set (PTH3, 1);
 
     gpio_set (PTH4, 1);
@@ -15823,12 +15911,12 @@ void I2C_SendACK(unsigned char ack_dat)
 static int SCCB_WaitAck(void)
 {
     gpio_set (PTH4, 0);
-	gpio_ddr (PTH3, GPI);
-	simiic_delay();
-	
-	gpio_set (PTH4, 1);
+    gpio_ddr (PTH3, GPI);
     simiic_delay();
-	
+    
+    gpio_set (PTH4, 1);
+    simiic_delay();
+    
     if(gpio_get (PTH3))           
     {
         gpio_ddr (PTH3, GPO);
@@ -15837,7 +15925,7 @@ static int SCCB_WaitAck(void)
     }
     gpio_ddr (PTH3, GPO);
     gpio_set (PTH4, 0);
-	simiic_delay();
+    simiic_delay();
     return 1;
 }
 
@@ -15847,7 +15935,7 @@ static int SCCB_WaitAck(void)
 
 void send_ch(uint8 c)
 {
-	uint8 i = 8;
+    uint8 i = 8;
     while(i--)
     {
         if(c & 0x80)	gpio_set (PTH3, 1);
@@ -15858,7 +15946,7 @@ void send_ch(uint8 c)
         simiic_delay();
         gpio_set (PTH4, 0);                
     }
-	SCCB_WaitAck();
+    SCCB_WaitAck();
 }
 
 
@@ -15884,10 +15972,10 @@ uint8 read_ch(uint8 ack_x)
         if(gpio_get (PTH3)) c+=1;   
     }
     gpio_ddr (PTH3, GPO);
-	gpio_set (PTH4, 0);
-	simiic_delay();
-	I2C_SendACK(ack_x);
-	
+    gpio_set (PTH4, 0);
+    simiic_delay();
+    I2C_SendACK(ack_x);
+    
     return c;
 }
 
@@ -15902,11 +15990,11 @@ uint8 read_ch(uint8 ack_x)
 
 void simiic_write_reg(uint8 dev_add, uint8 reg, uint8 dat)
 {
-	IIC_start();
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);   
-	send_ch( reg );   				 
-	send_ch( dat );   				 
-	IIC_stop();
+    send_ch( reg );   				 
+    send_ch( dat );   				 
+    IIC_stop();
 }
 
 
@@ -15921,18 +16009,18 @@ void simiic_write_reg(uint8 dev_add, uint8 reg, uint8 dat)
 
 uint8 simiic_read_reg(uint8 dev_add, uint8 reg, IIC_type type)
 {
-	uint8 dat;
-	IIC_start();
+    uint8 dat;
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);  
-	send_ch( reg );   				
-	if(type == SCCB)IIC_stop();
-	
-	IIC_start();
-	send_ch( (dev_add<<1) | 0x01);  
-	dat = read_ch(0);   				
-	IIC_stop();
-	
-	return dat;
+    send_ch( reg );   				
+    if(type == SCCB)IIC_stop();
+    
+    IIC_start();
+    send_ch( (dev_add<<1) | 0x01);  
+    dat = read_ch(0);   				
+    IIC_stop();
+    
+    return dat;
 }
 
 
@@ -15948,20 +16036,20 @@ uint8 simiic_read_reg(uint8 dev_add, uint8 reg, IIC_type type)
 
 void simiic_read_regs(uint8 dev_add, uint8 reg, uint8 *dat_add, uint8 num, IIC_type type)
 {
-	IIC_start();
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);  
-	send_ch( reg );   				
-	if(type == SCCB)IIC_stop();
-	
-	IIC_start();
-	send_ch( (dev_add<<1) | 0x01);  
+    send_ch( reg );   				
+    if(type == SCCB)IIC_stop();
+    
+    IIC_start();
+    send_ch( (dev_add<<1) | 0x01);  
     while(--num)
     {
         *dat_add = read_ch(1); 
         dat_add++;
     }
     *dat_add = read_ch(0); 
-	IIC_stop();
+    IIC_stop();
 }
 
 
@@ -15974,10 +16062,10 @@ void simiic_read_regs(uint8 dev_add, uint8 reg, uint8 *dat_add, uint8 num, IIC_t
 
 void IIC_init(void)
 {
-	gpio_init (PTH4, GPO,1);
-	gpio_init (PTH3, GPO,1);
+    gpio_init (PTH4, GPO,1);
+    gpio_init (PTH3, GPO,1);
 
-	port_pull (PTH4,PULLUP_ENBLE);
-	port_pull (PTH3,PULLUP_ENBLE);
+    port_pull (PTH4,PULLUP_ENBLE);
+    port_pull (PTH3,PULLUP_ENBLE);
 }
 

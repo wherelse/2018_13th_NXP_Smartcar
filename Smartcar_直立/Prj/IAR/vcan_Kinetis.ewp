@@ -2063,6 +2063,9 @@
     <group>
         <name>App</name>
         <file>
+            <name>$PROJ_DIR$\..\..\App\Attitude_Calculation.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\App\balance_control.c</name>
         </file>
         <file>
@@ -2102,10 +2105,16 @@
     <group>
         <name>Board</name>
         <file>
+            <name>$PROJ_DIR$\..\..\Board\src\BMX055.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\Board\src\IIC.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\Board\src\MPU6050.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\Board\src\myiic.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\Board\src\VCAN_ASCII.c</name>

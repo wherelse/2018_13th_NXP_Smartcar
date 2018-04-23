@@ -21,8 +21,14 @@
 #include "sensor.h"
 #include  "math.h"						 
 /*         变量定义         */
-int AngleSpeed = 0;
+float AngleSpeed = 0;//车角速度
 int offset_AngleSpeed = 0;
+float g_AngleOfCar;//车角度
+BMX055Datatypedef      BMX055_data;
+
+EulerAngleTypedef      SystemAttitude;            /////姿态角
+EulerAngleTypedef      SystemAttitudeRate;        /////姿态角速度
+AttitudeDatatypedef    GyroOffset;
 
 int AngleAccel = 0;
 int offset_AngleAccel = 0;
@@ -31,9 +37,9 @@ float Peried = 1 / 200.0;
 float KalmanGain = 1.0;//卡尔曼增益
 float Q = 10; //2.0;//过程噪声2.0		越小积分越慢，跟踪加速度计越慢越平滑
 float R = 2000;//5000.0;//测量噪声5000.0	越小跟踪加速度计越快
-float g_AngleOfCar;
 
-float angle_offset=-3620;
+
+float angle_offset=9;//角度偏置
 /*
 			  Z轴
 				\ ↗
@@ -69,14 +75,14 @@ void KalmanFilter(void)
 	KalmanGain = (float)sqrt(Priori_Convariance * Priori_Convariance / (Priori_Convariance * Priori_Convariance + R * R));
 	//2.测量更新(校正): X(k|k) = X(k|k-1)+K(k)*(Z(k)-H(k)*X(k|k-1)) 
 
-	vcan_send_buff[1] = AngleAccel;
+	//vcan_send_buff[1] = AngleAccel;
 
 	Posterior_Estimation = Priori_Estimation + KalmanGain * (AngleAccel - Priori_Estimation);
 	// 3.更新后验协方差  : P(k|k) =（I-K(k)*H(k)）*P(k|k-1) 
 	Posterior_Convariance = (float)sqrt((1 - KalmanGain) * Priori_Convariance * Priori_Convariance);
 	//得到最终角度 
 	g_AngleOfCar = Posterior_Estimation + angle_offset;
-	vcan_send_buff[2] = Posterior_Estimation;
+	//vcan_send_buff[2] = Posterior_Estimation;
         vcan_send_buff[3] = AngleSpeed;
 }
 

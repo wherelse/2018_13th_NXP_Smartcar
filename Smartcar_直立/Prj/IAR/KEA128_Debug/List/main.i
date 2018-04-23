@@ -13987,6 +13987,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15646,11 +15647,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15760,16 +15834,30 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
 
 
-
-
+ 
+ 
 typedef struct
 {
 	uint16_t a;
@@ -15782,53 +15870,55 @@ int adc_value[4];
 int key_value = 0;
 char KEY_NUM;
 float vcan_send_buff[4]; 
+int ErrLoop = 0;
+
+
 
 
 
 
  
-int flag_run = 1;
+int flag_run = 2;
 void pit0_irq(void)
 {
 	static int index = 0;
-	if(++index>5)
+	GetAngle();
+	Dir_Control();
+	if (++index > 5)
 	{
 		led_turn(LED0); 
-		Get_AccData();
-		Get_Gyro();
-		KalmanFilter();
-                Dir_Control();
-		if(++Flag_SpeedControl>20)
+		if (++Flag_SpeedControl > 10)
 		{
 			Flag_SpeedControl = 0;
 			Speed_calulate();
 			SpeedControl();
 		}
-		if(flag_run==1)
+		if (flag_run != 0)
 		{
-                  
-			Right_Motor_Control(Balance_Inside_Out - SpeedOut-DirOut);
-			Left_Motor_Control(Balance_Inside_Out - SpeedOut+DirOut);
+
+			Right_Motor_Control(Balance_Out - SpeedOut - DirOut);
+			Left_Motor_Control(Balance_Out - SpeedOut + DirOut);
 		}
 		else
 		{
 			Right_Motor_Control(0);
 			Left_Motor_Control(0);
 		}
-		SpeedControlOut();
-		
+		if (Speed_Kp > 1)
+			SpeedControlOut();
+
 	}
 	BalanceControl();
 	((((PIT_Type *)(0x40037000u)))->CHANNEL[PIT0]. TFLG)|=0x1u; 
 }
 void pit1_irq(void)
 {
-   key_value = Key_Scan();
-   SOLGUI_InputKey(key_value);
-   SOLGUI_Menu_PageStage(); 
-   SOLGUI_Refresh();        
-   ((((PIT_Type *)(0x40037000u)))->CHANNEL[PIT1]. TFLG)|=0x1u;
-   
+	key_value = Key_Scan();
+	SOLGUI_InputKey(key_value);
+	SOLGUI_Menu_PageStage(); 
+	SOLGUI_Refresh();        
+	((((PIT_Type *)(0x40037000u)))->CHANNEL[PIT1]. TFLG)|=0x1u;
+
 }
 void main(void)
 {
@@ -15850,7 +15940,7 @@ void main(void)
 	gpio_turn(PTD4);
 
 	soft_delay_ms(500);
-	
+
 	 
 	ftm_pwm_init(((FTM_Type *)(0x4003A000u)), FTM_CH0, 2000, 0);
 	ftm_pwm_init(((FTM_Type *)(0x4003A000u)), FTM_CH1, 2000, 0); 
@@ -15858,37 +15948,47 @@ void main(void)
 	ftm_pwm_init(((FTM_Type *)(0x4003A000u)), FTM_CH2, 2000, 0); 
 	ftm_pwm_init(((FTM_Type *)(0x4003A000u)), FTM_CH3, 2000, 0);
 
-	
+
 	 
 	SOLGUI_Init(&UI_MENU);
 	SOLGUI_Refresh();
-	
+
 	led_init(LED0);
 	Encoder_init();
-	pit_init(PIT0,1 * bus_clk_khz);;
+	
+	IIC_init_BMX();
+	while (BMX055_init() == 0)
+	{
+		ErrLoop++;
+		if (ErrLoop >= 20)
+			while (1);
+	};
+	pit_init(PIT0,5 * bus_clk_khz);;
 	pit_init(PIT1,100 * bus_clk_khz);;
-	NVIC_EnableIRQ(PIT_CH0_IRQn);  
+	NVIC_EnableIRQ(PIT_CH0_IRQn);
 	NVIC_EnableIRQ(PIT_CH1_IRQn);
 	asm(" CPSIE i");; 
-	
+
 	adc_init(ADC0_SE12);
 	adc_init(ADC0_SE13);
 	adc_init(ADC0_SE14);
 	adc_init(ADC0_SE15);
 
-	InitMPU6050();
+
 	for (;;)
-	{    
+	{
 		adc_value[0] = adc_once(ADC0_SE12, ADC_10bit);
 		adc_value[1] = adc_once(ADC0_SE13, ADC_10bit);
 		adc_value[2] = adc_once(ADC0_SE14, ADC_10bit);
 		adc_value[3] = adc_once(ADC0_SE15, ADC_10bit);
-		if (adc_value[0] == 0 && adc_value[1]==0 && adc_value[2]==0 && adc_value[3]==0)
-                  flag_run = 0;
-                else
-                  flag_run=1;
+
+		if (adc_value[0] == 0 && adc_value[1] == 0 && adc_value[2] == 0 && adc_value[3] == 0 && flag_run == 2)
+			flag_run = 0;
 		
 		
+		vcan_send_buff[0] = AccZAngle;
+		vcan_send_buff[1] = SystemAttitude.Pitch;
+		vcan_send_buff[2] = SystemAttitudeRate.Pitch;
 		vcan_sendware((uint8_t *)vcan_send_buff, sizeof(vcan_send_buff));
 	}
 }
@@ -15901,7 +16001,7 @@ void main(void)
 
 
  
-
+ 
 
 
 

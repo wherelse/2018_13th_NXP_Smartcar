@@ -2,32 +2,41 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="源文件\App">
-      <UniqueIdentifier>{8c20df3d-9f62-4e7d-4ca8-1eaa9a09b00d}</UniqueIdentifier>
+      <UniqueIdentifier>{6fea5edf-76c2-4a89-4665-96e6486a0a15}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\Board">
-      <UniqueIdentifier>{40a9a3d1-9026-4186-6987-85995fec33ee}</UniqueIdentifier>
+      <UniqueIdentifier>{4a04c118-1c1f-4c59-4eca-898a7b278ec9}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\Chip">
-      <UniqueIdentifier>{03dda8ad-cafa-4144-7665-f8c6879ebaff}</UniqueIdentifier>
+      <UniqueIdentifier>{4653c4f2-966a-490e-64d6-64e51a4fd0f6}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\LIB">
-      <UniqueIdentifier>{c60ac83a-45b2-4c3b-5922-b1e46965682f}</UniqueIdentifier>
+      <UniqueIdentifier>{2dd557f3-77d8-43e1-55a3-648ac4b444bb}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\SOLGUI">
-      <UniqueIdentifier>{32af8ef2-ac26-45eb-7695-56f8577fc3e8}</UniqueIdentifier>
+      <UniqueIdentifier>{7f6442d8-4634-48c3-7d37-0de018b739fb}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\SOLGUI\SRC">
-      <UniqueIdentifier>{6f15387d-e34e-4c2c-7100-b418c2222132}</UniqueIdentifier>
+      <UniqueIdentifier>{6ba32c85-f23e-4663-41bc-80a12c7a41d6}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件\SOLGUI\SRC\Font">
-      <UniqueIdentifier>{21a395c1-7986-473b-4548-b3df0c8256de}</UniqueIdentifier>
+      <UniqueIdentifier>{9c795dc6-8f61-4801-574d-2e2e1674891b}</UniqueIdentifier>
     </Filter>
     <Filter Include="源文件">
-      <UniqueIdentifier>{bf1d27d4-7ff0-4293-5db8-442e4e1136c8}</UniqueIdentifier>
+      <UniqueIdentifier>{eb944409-cead-47ac-44ff-7a6e84b8241c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\App\Attitude_Calculation.c">
+      <Filter>源文件\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\balance_control.c">
+      <Filter>源文件\App</Filter>
+    </ClCompile>
     <ClCompile Include="..\App\control.c">
+      <Filter>源文件\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\dir_control.c">
       <Filter>源文件\App</Filter>
     </ClCompile>
     <ClCompile Include="..\App\main.c">
@@ -39,8 +48,17 @@
     <ClCompile Include="..\App\MKEA128_it.c">
       <Filter>源文件\App</Filter>
     </ClCompile>
+    <ClCompile Include="..\App\motor_control.c">
+      <Filter>源文件\App</Filter>
+    </ClCompile>
     <ClCompile Include="..\App\sensor.c">
       <Filter>源文件\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\speed_control.c">
+      <Filter>源文件\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Board\src\BMX055.c">
+      <Filter>源文件\Board</Filter>
     </ClCompile>
     <ClCompile Include="..\Board\src\IIC.c">
       <Filter>源文件\Board</Filter>
@@ -153,17 +171,8 @@
     <ClCompile Include="..\SOLGUI\src\Font\Font8x8_ASCII.c">
       <Filter>源文件\SOLGUI\SRC\Font</Filter>
     </ClCompile>
-    <ClCompile Include="..\App\motor_control.c">
-      <Filter>源文件\App</Filter>
-    </ClCompile>
-    <ClCompile Include="..\App\speed_control.c">
-      <Filter>源文件\App</Filter>
-    </ClCompile>
-    <ClCompile Include="..\App\balance_control.c">
-      <Filter>源文件\App</Filter>
-    </ClCompile>
-    <ClCompile Include="..\App\dir_control.c">
-      <Filter>源文件\App</Filter>
+    <ClCompile Include="..\Board\src\myiic.c">
+      <Filter>源文件\Board</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

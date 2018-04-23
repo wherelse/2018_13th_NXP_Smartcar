@@ -14309,6 +14309,7 @@ typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
 
 
 
+
 typedef void *    (*memset_t)  (void *src, int c, int count);
 
 
@@ -15625,11 +15626,84 @@ extern void Display_Value(u8 x,u8 y,u8 t,float Value);
 
 
 
+
+typedef struct{
+  float W;
+  float X;
+  float Y;
+  float Z;
+}QuaternionTypedef;
+
+typedef struct{ 
+  float Pitch;  
+  float Yaw;    
+  float Roll;   
+}EulerAngleTypedef;
+
+
+typedef struct{
+  float Xdata;
+  float Ydata;
+  float Zdata;
+}AttitudeDatatypedef;
+
+extern QuaternionTypedef    Quaternion;   
+extern EulerAngleTypedef    EulerAngle;   
+extern QuaternionTypedef    AxisAngle;    
+extern EulerAngleTypedef    EulerAngleRate;
+
+extern QuaternionTypedef    MeaQuaternion;
+extern EulerAngleTypedef    MeaEulerAngle;
+extern QuaternionTypedef    MeaAxisAngle;
+
+extern QuaternionTypedef    ErrQuaternion;
+extern EulerAngleTypedef    ErrEulerAngle;
+extern QuaternionTypedef    ErrAxisAngle;
+extern AttitudeDatatypedef         Acc;
+extern AttitudeDatatypedef         Gyro;
+
+
+extern void Quaternion_init();
+
+extern void Attitude_UpdateGyro(void);
+
+extern void Attitude_UpdateAcc(void);
+
+
+
+
+
+
+
+
+
+
+typedef struct
+{
+	float GYROXdata;
+	float GYROYdata;
+	float GYROZdata;
+	float ACCXdata;
+	float ACCYdata;
+	float ACCZdata;
+	float MAGXdata;
+	float MAGYdata;
+	float MAGZdata;
+}BMX055Datatypedef;
+
+
+uint8 BMX055_init(void);
+uint8 BMX055_DataRead(BMX055Datatypedef *Q, uint8 type);
+
+
  
 extern float g_AngleOfCar;
 extern float angle_offset;
-extern int AngleSpeed;
+extern float AngleSpeed;
 extern int AngleAccel;
+extern BMX055Datatypedef      BMX055_data;
+extern EulerAngleTypedef SystemAttitude, SystemAttitudeRate;
+extern AttitudeDatatypedef    GyroOffset;
  
 void KalmanFilter(void);
 
@@ -15739,20 +15813,34 @@ extern float Balance_Inside_Kp;
 extern float Balance_Inside_Kd;
 extern float Balance_Inside_Out; 
 extern float Balance_Err, Balance_LastErr;
+extern float AccZAngle , QZAngle ;
+extern void GetAngle();
 
 void Dir_Control(void);
 extern float DirOut;
 extern float DirKp , DirKd ;
 
+
+
+
+
+
+
+
+
+uint8 IIC_Read_Reg(uint8 addr, uint8 offset);
+unsigned char IIC_Write_Reg(uint8 addr, uint8 offset, uint8 data);
+unsigned char IIC_Read_Buff(uint8 addr, uint8 offset, uint8* buff, uint8 size);
+void IIC_init_BMX(void);
 extern float vcan_send_buff[4]; 
 
 
 
 MENU_PAGE *current_page;
 GUI_FIFO _key_cache;	
-u8 cur_key=0;			
+u8 cur_key = 0;			
 
-u8 SOLGUI_CSR=0;		
+u8 SOLGUI_CSR = 0;		
 
 
 
@@ -15762,59 +15850,62 @@ u8 SOLGUI_CSR=0;
 extern CURSOR *cursor;	
 extern char KEY_NUM;
 extern int adc_value[4];
+extern int flag_run;
+extern int bInCircle;
+MENU_PAGE UI_MENU,UI_Debug;
+void _UI_MENU(){{ SOLGUI_Cursor(6,0,12); SOLGUI_Widget_GotoPage(0,&UI_Debug); SOLGUI_Widget_OptionText(1, "keynum:%d" , bInCircle); SOLGUI_Widget_OptionText(2, "ADC0:%d" , adc_value[0]); SOLGUI_Widget_OptionText(3, "ADC1:%d" , adc_value[1]); SOLGUI_Widget_OptionText(4, "ADC2:%d" , adc_value[2]); SOLGUI_Widget_OptionText(5, "ADC3:%d" , adc_value[3]); SOLGUI_Widget_OptionText(6, "DirOut:%f", DirOut); SOLGUI_Widget_Spin(7, "Speed", 0x04, -100, 100, &ExpectSpeed); SOLGUI_Widget_Spin(8, "SpeedOut", 0x04, -1000, 1000, &SpeedOut); SOLGUI_Widget_OptionText(9, "Angle=%f", SystemAttitude . Pitch); SOLGUI_Widget_Spin(10, "offset", 0x04, -10000, 10000, &angle_offset); SOLGUI_Widget_Spin(11, "run", 0x02, 0, 2, &flag_run); }} MENU_PAGE UI_MENU={"SmartCar",0,_UI_MENU};;
 
-MENU_PAGE UI_MENU;
-void _UI_MENU(){{ SOLGUI_Cursor(6,0,16); SOLGUI_Widget_OptionText(0, "keynum:%d" , KEY_NUM); SOLGUI_Widget_OptionText(1, "ADC0:%d" , adc_value[0]); SOLGUI_Widget_OptionText(2, "ADC1:%d" , adc_value[1]); SOLGUI_Widget_OptionText(3, "ADC2:%d" , adc_value[2]); SOLGUI_Widget_OptionText(4, "ADC3:%d" , adc_value[3]); SOLGUI_Widget_Spin(5, "SKp", 0x04, -100, 100, &Speed_Kp); SOLGUI_Widget_Spin(6, "Speed", 0x04, -100, 100, &ExpectSpeed); SOLGUI_Widget_OptionText(7, "Angle=%f", g_AngleOfCar); SOLGUI_Widget_Spin(8, "BKp", 0x04, -100, 100, &Balance_Kp); SOLGUI_Widget_Spin(9, "BKd", 0x04, -100, 100, &Balance_Kd); SOLGUI_Widget_Spin(10, "BIKp", 0x04, -100, 100, &Balance_Inside_Kp); SOLGUI_Widget_Spin(11, "BIKd", 0x04, -100, 100, &Balance_Inside_Kd); SOLGUI_Widget_Spin(12, "offset", 0x04, -10000, 10000, &angle_offset); SOLGUI_Widget_Spin(13, "SpeedOut", 0x04, -100, 100, &SpeedOut); SOLGUI_Widget_Spin(14, "DKp", 0x04, -100, 100, &DirKp); SOLGUI_Widget_Spin(15, "DKd", 0x04, -100, 100, &DirKd); }} MENU_PAGE UI_MENU={"SmartCar",0,_UI_MENU};;
 
+void _UI_Debug(){{ SOLGUI_Cursor(6,0,16); SOLGUI_Widget_Spin(0, "SKp", 0x04, -100, 100, &Speed_Kp); SOLGUI_Widget_Spin(1, "BKp", 0x04, -100, 100, &Balance_Kp); SOLGUI_Widget_Spin(2, "BKd", 0x04, -100, 100, &Balance_Kd); SOLGUI_Widget_Spin(3, "DKp", 0x04, -10000, 10000, &DirKp); SOLGUI_Widget_Spin(4, "DKd", 0x04, -10000, 10000, &DirKd); SOLGUI_Widget_OptionText(5, "DirOut:%f", DirOut); }} MENU_PAGE UI_Debug={"Debug",&UI_MENU,_UI_Debug};;
 
 
 void FIFO_Init(void)
 {
-
-	(*(memset_t)((*((uint32_t *)((0x1A0) + (uint32)(&(((mydata_in_t *)0)->memset))) ))))(_key_cache . FIFOBuffer,0,sizeof(_key_cache . FIFOBuffer));
-
-	_key_cache.Read=0;
-	_key_cache.Write=0;
+	
+	(*(memset_t)((*((uint32_t *)((0x1A0) + (uint32)(&(((mydata_in_t *)0)->memset))) ))))(_key_cache . FIFOBuffer, 0, sizeof(_key_cache . FIFOBuffer));
+	
+	_key_cache.Read = 0;
+	_key_cache.Write = 0;
 }
 
 void FIFO_EnQueue(u8 KeyCode)
 {
-	_key_cache.FIFOBuffer[_key_cache.Write]=KeyCode;
-	if(++_key_cache.Write>=5) _key_cache.Write=0;
+	_key_cache.FIFOBuffer[_key_cache.Write] = KeyCode;
+	if (++_key_cache.Write >= 5) _key_cache.Write = 0;
 }
 
 u8 FIFO_DeQueue(void)
 {
 	u8 ret;
-	if(_key_cache.Read==_key_cache.Write) return(0); 	
+	if (_key_cache.Read == _key_cache.Write) return(0); 	
 	else
 	{
-		ret=_key_cache.FIFOBuffer[_key_cache.Read];
-		if (++_key_cache.Read>=5) _key_cache.Read=0;
+		ret = _key_cache.FIFOBuffer[_key_cache.Read];
+		if (++_key_cache.Read >= 5) _key_cache.Read = 0;
 		return(ret);
 	}
-} 
+}
 
 void SOLGUI_Menu_Title(MENU_PAGE *page)
 {
-	u8 left_len=0,title_len=0;
+	u8 left_len = 0, title_len = 0;
 
-	title_len=6*((*(strlen_t)((*((uint32_t *)((0x1A0) + (uint32)(&(((mydata_in_t *)0)->strlen))) ))))((const char*)page ->pageTitle)+4);					
-	left_len=(128-title_len)>>1;									
+	title_len = 6 * ((*(strlen_t)((*((uint32_t *)((0x1A0) + (uint32)(&(((mydata_in_t *)0)->strlen))) ))))((const char*)page ->pageTitle) + 4);					
+	left_len = (128 - title_len) >> 1;									
 
 
-	SOLGUI_printf(left_len+2,56,0x01,"[ %s ]",page->pageTitle);				
-	SOLGUI_GBasic_Line(6,57,left_len+2,57,0x01);							
-	SOLGUI_GBasic_Line(left_len+title_len-2,57,128-7,57,0x01);	
+	SOLGUI_printf(left_len + 2, 56, 0x01, "[ %s ]", page->pageTitle);				
+	SOLGUI_GBasic_Line(6, 57, left_len + 2, 57, 0x01);							
+	SOLGUI_GBasic_Line(left_len + title_len - 2, 57, 128 - 7, 57, 0x01);	
 
-	if((page->parentPage!=0)&&(SOLGUI_CSR==0)) SOLGUI_printf(0,56,0x01,"%c",0x85);	
+	if ((page->parentPage != 0) && (SOLGUI_CSR == 0)) SOLGUI_printf(0, 56, 0x01, "%c", 0x85);	
 
 }
 
 
 void SOLGUI_Menu_SetHomePage(MENU_PAGE *home_page)	
 {
-	current_page=home_page;
+	current_page = home_page;
 	FIFO_Init();
 }
 
@@ -15825,23 +15916,23 @@ void SOLGUI_InputKey(u8 key_value)
 
 u8 SOLGUI_GetCurrentKey(void) 						
 {
-  	return(cur_key); 	
+	return(cur_key);
 }
 
 void SOLGUI_Menu_PageStage(void)					
 {
-
-	cur_key=FIFO_DeQueue();							
+	
+	cur_key = FIFO_DeQueue();							
 
 	SOLGUI_Menu_Title(current_page);				
 
 	current_page->pageFunc();						
-	if(cur_key==0x60&&SOLGUI_CSR==0){	
-		if(current_page->parentPage!=0)		
+	if (cur_key == 0x60 && SOLGUI_CSR == 0) {	
+		if (current_page->parentPage != 0)		
 		{
-			current_page=current_page->parentPage;	
-			cursor->cursor_rel_offset=0;			
-			cursor->viewport_offset=0;
+			current_page = current_page->parentPage;	
+			cursor->cursor_rel_offset = 0;			
+			cursor->viewport_offset = 0;
 		}
 	}
 }

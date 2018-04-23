@@ -30,34 +30,34 @@ uint8 IIC_num;     //发送|接收数据个数
 //-------------------------------------------------------------------------------------------------------------------
 void simiic_delay(void)
 {
-	//j=10通讯速率大约为100K （内核频率40M）
+    //j=10通讯速率大约为100K （内核频率40M）
     //j=0 通讯速率大约为140K （内核频率40M）
     uint16 j=0;   
-	while(j--);
+    while(j--);
 }
 
 
 //内部使用，用户无需调用
 void IIC_start(void)
 {
-	SDA1();
-	SCL1();
-	simiic_delay();
-	SDA0();
-	simiic_delay();
-	SCL0();
+    SDA1();
+    SCL1();
+    simiic_delay();
+    SDA0();
+    simiic_delay();
+    SCL0();
 }
 
 //内部使用，用户无需调用
 void IIC_stop(void)
 {
-	SDA0();
-	SCL0();
-	simiic_delay();
-	SCL1();
-	simiic_delay();
-	SDA1();
-	simiic_delay();
+    SDA0();
+    SCL0();
+    simiic_delay();
+    SCL1();
+    simiic_delay();
+    SDA1();
+    simiic_delay();
 }
 
 //主应答(包含ack:SDA=0和no_ack:SDA=0)
@@ -65,8 +65,8 @@ void IIC_stop(void)
 void I2C_SendACK(unsigned char ack_dat)
 {
     SCL0();
-	simiic_delay();
-	if(ack_dat) SDA0();
+    simiic_delay();
+    if(ack_dat) SDA0();
     else    	SDA1();
 
     SCL1();
@@ -79,12 +79,12 @@ void I2C_SendACK(unsigned char ack_dat)
 static int SCCB_WaitAck(void)
 {
     SCL0();
-	DIR_IN();
-	simiic_delay();
-	
-	SCL1();
+    DIR_IN();
     simiic_delay();
-	
+    
+    SCL1();
+    simiic_delay();
+    
     if(SDA)           //应答为高电平，异常，通信失败
     {
         DIR_OUT();
@@ -93,7 +93,7 @@ static int SCCB_WaitAck(void)
     }
     DIR_OUT();
     SCL0();
-	simiic_delay();
+    simiic_delay();
     return 1;
 }
 
@@ -103,7 +103,7 @@ static int SCCB_WaitAck(void)
 //内部使用，用户无需调用
 void send_ch(uint8 c)
 {
-	uint8 i = 8;
+    uint8 i = 8;
     while(i--)
     {
         if(c & 0x80)	SDA1();//SDA 输出数据
@@ -114,7 +114,7 @@ void send_ch(uint8 c)
         simiic_delay();
         SCL0();                //SCL 时钟线拉低
     }
-	SCCB_WaitAck();
+    SCCB_WaitAck();
 }
 
 //字节接收程序
@@ -140,10 +140,10 @@ uint8 read_ch(uint8 ack_x)
         if(SDA) c+=1;   //读数据位，将接收的数据存c
     }
     DIR_OUT();
-	SCL0();
-	simiic_delay();
-	I2C_SendACK(ack_x);
-	
+    SCL0();
+    simiic_delay();
+    I2C_SendACK(ack_x);
+    
     return c;
 }
 
@@ -158,11 +158,11 @@ uint8 read_ch(uint8 ack_x)
 //-------------------------------------------------------------------------------------------------------------------
 void simiic_write_reg(uint8 dev_add, uint8 reg, uint8 dat)
 {
-	IIC_start();
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);   //发送器件地址加写位
-	send_ch( reg );   				 //发送从机寄存器地址
-	send_ch( dat );   				 //发送需要写入的数据
-	IIC_stop();
+    send_ch( reg );   				 //发送从机寄存器地址
+    send_ch( dat );   				 //发送需要写入的数据
+    IIC_stop();
 }
 
 
@@ -177,18 +177,18 @@ void simiic_write_reg(uint8 dev_add, uint8 reg, uint8 dat)
 //-------------------------------------------------------------------------------------------------------------------
 uint8 simiic_read_reg(uint8 dev_add, uint8 reg, IIC_type type)
 {
-	uint8 dat;
-	IIC_start();
+    uint8 dat;
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);  //发送器件地址加写位
-	send_ch( reg );   				//发送从机寄存器地址
-	if(type == SCCB)IIC_stop();
-	
-	IIC_start();
-	send_ch( (dev_add<<1) | 0x01);  //发送器件地址加读位
-	dat = read_ch(no_ack);   				//读取数据
-	IIC_stop();
-	
-	return dat;
+    send_ch( reg );   				//发送从机寄存器地址
+    if(type == SCCB)IIC_stop();
+    
+    IIC_start();
+    send_ch( (dev_add<<1) | 0x01);  //发送器件地址加读位
+    dat = read_ch(no_ack);   				//读取数据
+    IIC_stop();
+    
+    return dat;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -204,20 +204,20 @@ uint8 simiic_read_reg(uint8 dev_add, uint8 reg, IIC_type type)
 //-------------------------------------------------------------------------------------------------------------------
 void simiic_read_regs(uint8 dev_add, uint8 reg, uint8 *dat_add, uint8 num, IIC_type type)
 {
-	IIC_start();
+    IIC_start();
     send_ch( (dev_add<<1) | 0x00);  //发送器件地址加写位
-	send_ch( reg );   				//发送从机寄存器地址
-	if(type == SCCB)IIC_stop();
-	
-	IIC_start();
-	send_ch( (dev_add<<1) | 0x01);  //发送器件地址加读位
+    send_ch( reg );   				//发送从机寄存器地址
+    if(type == SCCB)IIC_stop();
+    
+    IIC_start();
+    send_ch( (dev_add<<1) | 0x01);  //发送器件地址加读位
     while(--num)
     {
         *dat_add = read_ch(ack); //读取数据
         dat_add++;
     }
     *dat_add = read_ch(no_ack); //读取数据
-	IIC_stop();
+    IIC_stop();
 }
 
 
@@ -230,10 +230,10 @@ void simiic_read_regs(uint8 dev_add, uint8 reg, uint8 *dat_add, uint8 num, IIC_t
 //-------------------------------------------------------------------------------------------------------------------
 void IIC_init(void)
 {
-	gpio_init (SEEKFREE_SCL, GPO,1);
-	gpio_init (SEEKFREE_SDA, GPO,1);
+    gpio_init (SEEKFREE_SCL, GPO,1);
+    gpio_init (SEEKFREE_SDA, GPO,1);
 
-	port_pull (SEEKFREE_SCL,PULLUP_ENBLE);
-	port_pull (SEEKFREE_SDA,PULLUP_ENBLE);
+    port_pull (SEEKFREE_SCL,PULLUP_ENBLE);
+    port_pull (SEEKFREE_SDA,PULLUP_ENBLE);
 }
 

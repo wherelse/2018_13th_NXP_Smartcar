@@ -300,7 +300,7 @@ typedef char *    (*ftoan_t)            (double dValue, char *chBuffer, int ndig
 //常用小功能                                       ************************************************
 //内存复制
 typedef void *    (*memcpy_t)  ( uint8_t *dst, uint8_t *src, uint32_t count);
-#define memcpy(...)                               ENTER_FUN(memcpy,##__VA_ARGS__)
+//#define memcpy(...)                               ENTER_FUN(memcpy,##__VA_ARGS__)
 
 
 //内存设置数值
