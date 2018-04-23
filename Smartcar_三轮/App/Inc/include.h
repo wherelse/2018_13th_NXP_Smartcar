@@ -24,6 +24,7 @@
 #include "SOLGUI_Include.h"
 #include "control.h"
 #include "MyOLED.h"
+#include "direction.h"
 
 
 #endif  //__INCLUDE_H__

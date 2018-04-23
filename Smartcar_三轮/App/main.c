@@ -11,7 +11,7 @@
  * @brief      山外KEA 平台主程序
  * @author     山外科技
  * @version    v6.0
- * @date       2017-12-10
+ * @date      017-12-10
  */
 
 #include "common.h"
@@ -28,7 +28,7 @@
 int adc_value[4];
 int key_value = 0;
 char KEY_NUM;
-int position;
+float position;
 int left_lossline_Range = 10, right_lossline_Range=10;
 extern int g_real_speed,g_set_speed,loseline,normalization_threshold[4];
 
@@ -44,6 +44,8 @@ void pit0_irq(void)
     Speed_PIControl(g_set_speed,g_real_speed);
 //	get_sensor_threshold_normalization();
     Senser_normalization(adc_value);
+	position = cal_deviation(adc_value)+1;
+	//position = position_filter(position);
 	lose_line_deal(adc_value, adc_value[0] - adc_value[3], left_lossline_Range, right_lossline_Range);
     Dir_PdControl();
     Motor_control();
@@ -100,10 +102,10 @@ void main(void)
     Sensor_init();
     led_init(LED0);
     Encoder_init();
-    pit_init_ms(PIT0, 10);
+    pit_init_ms(PIT0, 5);
     pit_init_ms(PIT1, 100);
-   enable_irq(PIT_CH0_IRQn);  
-   enable_irq(PIT_CH1_IRQn);
+    enable_irq(PIT_CH0_IRQn);  
+    enable_irq(PIT_CH1_IRQn);
     EnableInterrupts; //打开总的中断开关
     
     for (;;)

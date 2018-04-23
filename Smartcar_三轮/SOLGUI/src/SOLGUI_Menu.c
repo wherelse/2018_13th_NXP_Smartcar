@@ -25,10 +25,10 @@ MENU_PAGE UI_MENU;
 MENU_PAGE EDIT,DISPLAY;
 __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 		 {
-			 SOLGUI_Cursor(6, 0, 11);
+			 SOLGUI_Cursor(6, 0, 12);
 			 SOLGUI_Widget_OptionText(0, "keynum:%d", KEY_NUM);
 			 SOLGUI_Widget_GotoPage(1, &EDIT);
-                         SOLGUI_Widget_OptionText(2, "lossline:%d", loss_line);
+             SOLGUI_Widget_OptionText(2, "lossline:%d", loss_line);
 			// SOLGUI_Widget_GotoPage(2, &DISPLAY);
                         // SOLGUI_Widget_Button(3 , Start,)
 			 SOLGUI_Widget_OptionText(3, "ADC0:%d", adc_value[0]);
@@ -37,8 +37,9 @@ __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 			 SOLGUI_Widget_OptionText(6, "ADC3:%d", adc_value[3]);
 			 SOLGUI_Widget_OptionText(7, "realspeed=%d", g_real_speed);
 			 SOLGUI_Widget_OptionText(8, "dir.err=%d", adc_value[3] - adc_value[0]);
-			 SOLGUI_Widget_OptionText(9, "SpeedL=%d", motorEncorderL);
-			 SOLGUI_Widget_OptionText(10, "SpeedR=%d", motorEncorderR);
+			 SOLGUI_Widget_OptionText(9, "position=%d", position);
+			 SOLGUI_Widget_OptionText(10, "SpeedL=%d", motorEncorderL);
+			 SOLGUI_Widget_OptionText(11, "SpeedR=%d", motorEncorderR);
 
 		 });
 
@@ -50,9 +51,9 @@ __M_PAGE(EDIT,"Edit",&UI_MENU,
 	SOLGUI_Widget_Spin(2, "losespeed", INT32, 1000, 0,&loselinespeed);
 	SOLGUI_Widget_Spin(3, "spKp", FLT16, 100, 0, &speed.Kp);
 	SOLGUI_Widget_Spin(4, "spKd", FLT16, 100, 0, &speed.Ki);
-	SOLGUI_Widget_Spin(5,"dirKp",FLT16,100,0,&dir.Kp);
-	SOLGUI_Widget_Spin(6,"dirKd",FLT16,100,0,&dir.Kd);
-        SOLGUI_Widget_Spin(7,"DutyMax",INT32,1000,0,&dutyMax);
+	SOLGUI_Widget_Spin(5,"dirKp",FLT16,100,-100,&dir.Kp);
+	SOLGUI_Widget_Spin(6,"dirKd",FLT16,100,-100,&dir.Kd);
+    SOLGUI_Widget_Spin(7,"DutyMax",INT32,1000,0,&dutyMax);
 	SOLGUI_Widget_Spin(8,"leftThr",INT32,1000,0,&left_lossline_Range);
 	SOLGUI_Widget_Spin(9,"rightthr",INT32,1000,0,&right_lossline_Range);
 	SOLGUI_Widget_GotoPage(10,&UI_MENU);

@@ -1,6 +1,9 @@
 #include "control.h"
 #include "include.h"
 
+#define POSITION_BOUND               200        //定义偏差限幅值
+#define LEFT_PISITION_GAIN           1.0        //定义左偏差调平值
+#define RIGHT_PISITION_GAIN           1.0       //定义右偏差调平值
 
 #define ADC_CH0 ADC0_SE12
 #define ADC_CH1 ADC0_SE13
@@ -12,9 +15,9 @@ int g_base_speed=40,g_real_speed=0,g_set_speed=40,speedMax=200,dutyMax=600,losel
 int loss_line=0;
 extern char KEY_NUM;
 extern int adc_value[4];
-
-struct pid speed = {-4.5,-0.1,0,0,0,0,0};
-struct pid dir = {2,2,0,0,0,0,0};
+extern float position;
+struct pid speed = {4.5,0.1,0,0,0,0,0};
+struct pid dir = {0.7,0,1.1,0,0,0,0};
 
 int normalization_threshold[4]={100,100,100,100};
 
@@ -65,7 +68,11 @@ void Speed_calulate(void)
 }
 
 
-
+/*
+*  @brief      编码器初始化函数
+*  @since      v1.0
+*	FTM0,FTM1做外部计数
+*/
 void Encoder_init(void)
 {
     gpio_init(PTD2, GPI, 0);
@@ -98,23 +105,23 @@ void Motor_control(void)
 	//	dutyR = -50;
 	//}
 
-	static int change = 50;
+	static float change = 50;
 	if (loss_line == 0)
 	{
 		change = 50;
 	}
 	if (loss_line == 1)
 	{
-		dutyL = loselinespeed;
-		dutyR = -change;
-		change += 5;
+		dutyL = -change;
+		dutyR = loselinespeed;
+		change += 4;
 		if (change > dutyMax)change = dutyMax;
 	}
 	if (loss_line == 2)
 	{
-		dutyL = -change;
-		dutyR = loselinespeed;
-		change += 5;
+		dutyL = loselinespeed;
+		dutyR = -change;
+		change += 4;
 		if (change > dutyMax)change = dutyMax;
 	}
 
@@ -128,31 +135,31 @@ void Motor_control(void)
 	if (dutyR < (-dutyMax))
 		dutyR = -dutyMax;
 
-	if (dutyL < 0)
+	if (dutyL > 0)
 	{
 		ftm_pwm_duty(FTM2, FTM_CH0, 0);
-		ftm_pwm_duty(FTM2, FTM_CH1, (-dutyL));
+		ftm_pwm_duty(FTM2, FTM_CH1, dutyL);
 	}
-	else if (dutyL > 0)
+	else if (dutyL < 0)
 	{
-		ftm_pwm_duty(FTM2, FTM_CH0, dutyL);
+		ftm_pwm_duty(FTM2, FTM_CH0, 0.4*(-dutyL));
 		ftm_pwm_duty(FTM2, FTM_CH1, 0);
 	}
         else
         {
-          	ftm_pwm_duty(FTM2, FTM_CH0, 0);
+          ftm_pwm_duty(FTM2, FTM_CH0, 0);
 		ftm_pwm_duty(FTM2, FTM_CH1, 0);
         }
 
-	if (dutyR < 0)
+	if (dutyR > 0)
 	{
-		ftm_pwm_duty(FTM2, FTM_CH2, (-dutyR));
+		ftm_pwm_duty(FTM2, FTM_CH2, dutyR);
 		ftm_pwm_duty(FTM2, FTM_CH3, 0);
 	}
-	else if (dutyR > 0)
+	else if (dutyR < 0)
 	{
 		ftm_pwm_duty(FTM2, FTM_CH2, 0);
-		ftm_pwm_duty(FTM2, FTM_CH3, dutyR);
+		ftm_pwm_duty(FTM2, FTM_CH3, 0.4*(-dutyR));
 	}
         else
         {
@@ -168,7 +175,7 @@ void Motor_control(void)
 */
 void Speed_PIControl(int set_speed,int real_speed)
 {
-	uint16 SpeedMax = 500;
+	//uint16 SpeedMax = 500;
 	speed.err = set_speed - real_speed;
 	//if (speed.err > 30)speed.err = 30;
 	//if (speed.err < -30)speed.err = -30;
@@ -184,8 +191,8 @@ void Speed_PIControl(int set_speed,int real_speed)
 */
 void Dir_PdControl(void)
 {
-	static float pid_out_last=0;
-	dir.err = adc_value[0]-adc_value[3];//ADC_deal(adc_value);
+	//static float pid_out_last=0;
+	dir.err = position; //adc_value[3] - adc_value[0];////ADC_deal(adc_value);
 	dir.pidout = dir.Kp * dir.err + dir.Kd * (dir.err - dir.err_last);
 	dir.err_last = dir.err;
 	//if (dir.pidout > 0 && pid_out_last < 0)dir.pidout = pid_out_last + 10;
@@ -204,20 +211,34 @@ void Sensor_init(void)
 int ADC_deal(int * adcValue)
 {
 	int ValueCopy[4],adc_cal[4],position=0;
+	float multiply[3] = { 0.0f,0.0f,0.0f };
+	float line[3] = { 0.0f,0.0f,0.0f };
 	u8 i;
 	for (i = 0; i < 4; i++)
-		ValueCopy[i] = adcValue[i];
+		ValueCopy[i] = adcValue[i]+2.5f;	
 	adc_cal[0]=ValueCopy[0]-ValueCopy[1];//右减右中
 	adc_cal[1]=ValueCopy[1]-ValueCopy[2];//右中减左中
 	adc_cal[2]=ValueCopy[2]-ValueCopy[3];//左中减左
 	adc_cal[3]=ValueCopy[0]-ValueCopy[3];//右减左
 
-	position= adc_cal[3] + adc_cal[1];
+	multiply[0] = (ValueCopy[0]+10) * (ValueCopy[1]+10);
+	multiply[1] = (ValueCopy[1]+10) * (ValueCopy[2]+10);
+	multiply[2] = (ValueCopy[2]+10) * (ValueCopy[3]+10);
+	
+	line[0] = adc_cal[0] / multiply[0];
+	line[1] = adc_cal[1] / multiply[1];
+	line[2] = adc_cal[2] / multiply[2];
+
+	position = line[1];// (line[0]+line[1]+line[2])/3.0;
 	return position;
 }
 
 
-
+/*
+*  @brief      丢线处理
+*  @since      v1.0
+*
+*/
 void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 {
 	static int error_add[3] = {0, 0, 0}, loss_line_inc;
@@ -231,7 +252,7 @@ void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 	error_add[0] = position;								  //数组首位为处理后误差
 	error_tatal = error_add[0] + error_add[1] + error_add[2]; //三次误差值的和
 	sensor_value_all = adc_value[0] + adc_value[1] + adc_value[2] + adc_value[3];
-	if (((leftRange > sensor_value_all) || (rightRange < sensor_value_all) )&& (adc_value[0]<10||adc_value[3]<10))//判断电感值是否小于丢线阈值
+	if (((leftRange > sensor_value_all) || (rightRange > sensor_value_all) )&& (adc_value[0]<10|| adc_value[3]<10))//判断电感值是否小于丢线阈值
 	{
 		if ((error_tatal > 0) && (loss_line == 0) && (leftRange > sensor_value_all))
 			{
@@ -265,7 +286,11 @@ void lose_line_deal(int *adc_Value, int position, int leftRange, int rightRange)
 		}
 	}
 }
-
+/*
+*  @brief      归一化最大值采集
+*  @since      v1.0
+*  
+*/
 void get_sensor_threshold_normalization(void)
 {
 	int sensor_value_now[4] = { 0,0,0,0 };
@@ -287,6 +312,11 @@ void get_sensor_threshold_normalization(void)
 	
 }
 
+/*
+*  @brief      传感器ADC采集
+*  @since      v1.0
+*  sensor_value   ADC采集数组
+*/
 void sensorValue_get(int * sensor_value)
 {
 	sensor_value[0] = adc_once(ADC_CH0, ADC_10bit);
@@ -314,13 +344,13 @@ void Senser_normalization(int * sensor_value)
 *  @since      v1.0
 *  ad_normal   归一化前数据
 */
-float cal_deviation(uint16 * sensor_value)
+float cal_deviation(int * sensor_value)
 {
 	float amp = 10000.0f;		//放大倍数
 	float pwr_total = 0.0f;
 	float position = 0.0f;
 	float ad_sum = 0.0f;
-	float sensor_value_copy[6] = { 0.0f,0.0f,0.0f,0.0f,0.0f,0.0f };
+	float sensor_value_copy[4] = { 0.0f,0.0f,0.0f,0.0f };
 	float ad_cal[4] = { 0.0f,0.0f,0.0f,0.0f };
 	float minus[3] = { 0.0f,0.0f,0.0f };
 	float multiply[3] = { 0.0f,0.0f,0.0f };
@@ -328,7 +358,7 @@ float cal_deviation(uint16 * sensor_value)
 	float pwr[3] = { 0.0f,0.0f,0.0f };
 	float kp[3] = { 0.0f,0.0f,0.0f };
 
-	for (uint8 i = 0; i<6; i++)
+	for (uint8 i = 0; i<4; i++)
 	{
 		sensor_value_copy[i] = (float)(sensor_value[i]);		//将原数组复制一份，以便处理 
 	}
@@ -337,13 +367,11 @@ float cal_deviation(uint16 * sensor_value)
 	sensor_value_copy[1] += 2.5f;
 	sensor_value_copy[2] += 2.5f;
 	sensor_value_copy[3] += 2.5f;
-	sensor_value_copy[4] += 2.5f;
-	sensor_value_copy[5] += 2.5f;
 
 	ad_cal[0] = sensor_value_copy[0];
-	ad_cal[1] = sensor_value_copy[2];
-	ad_cal[2] = sensor_value_copy[3];
-	ad_cal[3] = sensor_value_copy[5];
+	ad_cal[1] = sensor_value_copy[1];
+	ad_cal[2] = sensor_value_copy[2];
+	ad_cal[3] = sensor_value_copy[3];
 
 	//        ad_sum = ad_cal[0] + ad_cal[1] + ad_cal[2] + ad_cal[3];
 
@@ -387,6 +415,71 @@ float cal_deviation(uint16 * sensor_value)
 	position = ((kp[0] * line[0]) + (kp[1] * line[1]) + (kp[2] * line[2])) * 1;
 
 	return position;
+}
+
+/*
+*  @brief         偏差滤波
+*  @since         v1.0
+*　position       偏差值
+*/
+float position_filter(float position)
+{
+	static float position_add[10];
+	float position_add_copy[10];
+	int32 position_total = 0;
+	float position_average;
+	float temp = 0.0f;
+	uint8 i = 0;
+	uint8 j = 0;
+
+	for (i = 9; i>0; i--)
+	{
+		position_add[i] = position_add[i - 1];              //数组循环左移
+	}
+	position_add[0] = position;                           //将当次的偏差放到数组头部 
+
+	for (i = 0; i<10; i++)
+	{
+		position_add_copy[i] = position_add[i];
+	}
+
+	for (i = 0; i<9; i++)                   //冒泡排序
+	{
+		for (j = 0; j<(9 - i); j++)
+		{
+			if (position_add_copy[j] > position_add_copy[j + 1])
+			{
+				temp = position_add_copy[j];
+				position_add_copy[j] = position_add_copy[j + 1];
+				position_add_copy[j + 1] = temp;
+			}
+		}
+	}
+
+	for (i = 3; i<7; i++)
+	{
+		position_total += position_add_copy[i];                        //去掉最小的3个和最大的3个，其余值相加
+	}
+	position_average = position_total / 4.0f;
+
+	if (position_average > 0.0f)                              //对左右偏差进行调平
+	{
+		position_average *= LEFT_PISITION_GAIN;
+	}
+	if (position_average < 0.0f)
+	{
+		position_average *= RIGHT_PISITION_GAIN;
+	}
+
+	if (position_average > POSITION_BOUND)                              //对偏差进行限幅
+	{
+		position_average = POSITION_BOUND;
+	}
+	if (position_average < (-(POSITION_BOUND)))
+	{
+		position_average = (-(POSITION_BOUND));
+	}
+	return position_average;
 }
 //
 ////自定义需要保存的数据，务必确保不能全为 0XFF ，否则会识别异常

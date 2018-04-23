@@ -1,0 +1,15 @@
+"D:\Program Files\IAR\arm\bin\armproc.dll" 
+
+"D:\Program Files\IAR\arm\bin\armjlink2.dll" 
+
+"E:\文件资料\github\2018_13th_NXP_Smartcar\Smartcar_三轮\Prj\IAR\KEA128_Debug\Exe\vcan_Kinetis.out" 
+
+--plugin "D:\Program Files\IAR\arm\bin\armbat.dll" 
+
+--device_macro "D:\Program Files\IAR\arm\config\debugger\NXP\KExx.dmac" 
+
+--flash_loader "E:\文件资料\github\2018_13th_NXP_Smartcar\Smartcar_三轮\Prj\IAR\config files\FlashKE04Z128_4.board" 
+
+
+
+
