@@ -39,6 +39,7 @@ int ErrLoop = 0;
   表示pit通道0的中断函数为pit0_irq
 */
 int flag_run = 2;
+#ifdef BALANCE 
 void pit0_irq(void)
 {
 	static int index = 0;//时序控制标志位
@@ -71,6 +72,14 @@ void pit0_irq(void)
 	BalanceControl();//平衡控制
 	PIT_Flag_Clear(PIT0); //清中断标志位
 }
+#else
+void pit0_irq(void)
+{	
+	PIT_Flag_Clear(PIT0); //清中断标志位
+}
+
+#endif // BALANCE 
+
 void pit1_irq(void)
 {
 	key_value = Key_Scan();
@@ -116,6 +125,7 @@ void main(void)
 	led_init(LED0);
 	Encoder_init();
 	//InitMPU6050();
+#ifdef BALANCE
 	IIC_init_BMX();
 	while (BMX055_init() == 0)
 	{
@@ -123,6 +133,10 @@ void main(void)
 		if (ErrLoop >= 20)
 			while (1);
 	};
+#endif // BALANCE
+
+
+
 	pit_init_ms(PIT0, 5);
 	pit_init_ms(PIT1, 100);
 	enable_irq(PIT_CH0_IRQn);
