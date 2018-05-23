@@ -9,4 +9,5 @@ extern float RealSpeed;
 extern float SpeedOutNew;
 extern float Speed_Kp;
 extern float ExpectSpeed;
+extern float Speed_Ki;
 #endif

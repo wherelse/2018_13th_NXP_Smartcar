@@ -1,9 +1,9 @@
 #include "include.h"
 float DirErr, DirErrLast;
-float DirKp = 130, DirKd = 160;
+float DirKp = 400, DirKd = 200;
 float DirOut;
 float DirErrList[10];
-int bInCircle = 0.5;//圆环标志位，0：无圆环；1：向右进；2：向左进；
+int bInCircle = 0;//圆环标志位，0：无圆环；1：向右进；2：向左进；
 int enCircle = 1;
 /*
  @ 作者:邓
@@ -52,10 +52,10 @@ float Get_ADC_Err(int *ADC_value)
 	//--------------------圆环(beta)-----↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑-----圆环(beta)--------------------//
 
 	//感觉没啥用
-	/*value[0] = (value[0] < 2 ? 2 : value[0]);
+	value[0] = (value[0] < 2 ? 2 : value[0]);
 	value[1] = (value[1] < 2 ? 2 : value[1]);
 	value[2] = (value[2] < 2 ? 2 : value[2]);
-	value[3] = (value[3] < 2 ? 2 : value[3]);*/
+	value[3] = (value[3] < 2 ? 2 : value[3]);
 
 	g_fDirectionError = (float)(value[0] - value[1]) / (value[0] + value[1]);//差比和
 

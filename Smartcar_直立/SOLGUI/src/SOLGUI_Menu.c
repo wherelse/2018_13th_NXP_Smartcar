@@ -33,7 +33,7 @@ __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 		SOLGUI_Widget_OptionText(4, "ADC2:%d"   , adc_value[2]);
 		SOLGUI_Widget_OptionText(5, "ADC3:%d"   , adc_value[3]);
 		SOLGUI_Widget_OptionText(6, "DirOut:%f", DirOut);
-		SOLGUI_Widget_Spin(7, "Speed", FLT16, -100, 100, &ExpectSpeed);
+		SOLGUI_Widget_Spin(7, "Speed", FLT16, -100, 1000, &ExpectSpeed);
 		SOLGUI_Widget_Spin(8, "SpeedOut", FLT16, 0, 2000, &SpeedOut);
 		SOLGUI_Widget_OptionText(9, "Angle=%f", SystemAttitude.Pitch);
 		SOLGUI_Widget_Spin(10, "offset", FLT16, -10000, 10000, &angle_offset);
@@ -46,11 +46,12 @@ __M_PAGE(UI_Debug, "Debug", &UI_MENU,
 	{
 		SOLGUI_Cursor(6,0,16);
 		SOLGUI_Widget_Spin(0, "SKp", FLT16, -100, 100, &Speed_Kp);
-		SOLGUI_Widget_Spin(1, "BKp", FLT16, -100, 100, &Balance_Kp);
-		SOLGUI_Widget_Spin(2, "BKd", FLT16, -100, 100, &Balance_Kd);
-		SOLGUI_Widget_Spin(3, "DKp", FLT16, -10000, 10000, &DirKp);
-		SOLGUI_Widget_Spin(4, "DKd", FLT16, -10000, 10000, &DirKd);
-		SOLGUI_Widget_OptionText(5, "DirOut:%f", DirOut);
+        SOLGUI_Widget_Spin(1, "SKi", FLT16, -100, 100, &Speed_Ki);
+		SOLGUI_Widget_Spin(2, "BKp", FLT16, -1000, 1000, &Balance_Kp);
+		SOLGUI_Widget_Spin(3, "BKd", FLT16, -1000, 1000, &Balance_Kd);
+		SOLGUI_Widget_Spin(4, "DKp", FLT16, -10000, 10000, &DirKp);
+		SOLGUI_Widget_Spin(5, "DKd", FLT16, -10000, 10000, &DirKd);
+		SOLGUI_Widget_OptionText(6, "DirOut:%f", DirOut);
 	});
 //##############################【内部使用】##############################
 

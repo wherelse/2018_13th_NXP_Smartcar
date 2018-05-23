@@ -75,6 +75,33 @@ void pit0_irq(void)
 #else
 void pit0_irq(void)
 {	
+	static int index = 0;//时序控制标志位
+	//GetAngle();//获取陀螺仪角度
+	Dir_Control();//方向控制
+	if (++index > 5)
+	{
+		led_turn(LED0); //闪烁 LED3
+		if (++Flag_SpeedControl > 10)
+		{
+			Flag_SpeedControl = 0;
+			Speed_calulate();
+			SpeedControl();
+		}
+		if (flag_run != 0)
+		{
+
+			Right_Motor_Control(Balance_Out - SpeedOut + DirOut);
+			Left_Motor_Control(Balance_Out - SpeedOut - DirOut);
+		}
+		else//停车
+		{
+			Right_Motor_Control(0);
+			Left_Motor_Control(0);
+		}
+		if (Speed_Kp > 1)//速度环参数为0时速度开环
+			SpeedControlOut();
+
+	}
 	PIT_Flag_Clear(PIT0); //清中断标志位
 }
 
@@ -160,10 +187,10 @@ void main(void)
 			flag_run = 0;//出赛道停车判断
 		//if(g_AngleOfCar>300|| g_AngleOfCar<-800 )flag_run = 0;
 		//vcan_send_buff[0] = g_AngleOfCar;
-		vcan_send_buff[0] = AccZAngle;
-		vcan_send_buff[1] = SystemAttitude.Pitch;
-		vcan_send_buff[2] = SystemAttitudeRate.Pitch;
-		vcan_sendware((uint8_t *)vcan_send_buff, sizeof(vcan_send_buff));
+		//vcan_send_buff[0] = AccZAngle;
+		//vcan_send_buff[1] = SystemAttitude.Pitch;
+		//vcan_send_buff[2] = SystemAttitudeRate.Pitch;
+		//vcan_sendware((uint8_t *)vcan_send_buff, sizeof(vcan_send_buff));
 	}
 }
 
