@@ -2,7 +2,6 @@
 #define _control_h
 #include "include.h"
 
-extern int motorEncorderL,motorEncorderR;
 struct pid
 {
 	float Kp;
@@ -15,6 +14,8 @@ struct pid
 };
 extern struct pid dir,speed;
 extern int adc_value[4];
+extern int motorEncorderL, motorEncorderR,g_base_speed,g_real_speed, g_set_speed, speedMax, dutyMax;
+extern int g_leftThrottle , g_rightThrottle , loss_line ;
 /*FTMÕ¼¿Õ±È*/
 //#define CH0_Duty
 unsigned char Key_check (unsigned char key);
@@ -26,6 +27,6 @@ void Speed_PidControl(int set_speed,int real_speed);
 void Dir_PdControl(void);
 void Adc_Init(void);
 void sensorValue_get(int * sensor_value);
-uint8 switch_read(void);
+void beep(unsigned char clk);
 int ADC_deal(int * adcValue);
 #endif

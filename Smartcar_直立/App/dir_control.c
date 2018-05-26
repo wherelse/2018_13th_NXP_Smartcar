@@ -19,25 +19,25 @@ float Get_ADC_Err(int *ADC_value)
 	//传感器对应
 
 	//ADC_value[0] ADC_value[1] ADC_value[2] ADC_value[3]
-//	//    value[0]    value[2]    value[3]    value[1]
+//	//    value[3]    value[2]    value[1]    value[0]
 	//       o-----------o-----------o-----------o     
 	//                    \         /
 	//                     \       /
 	//                      \     /
 
 	value[0] = ADC_value[0];
-	value[1] = ADC_value[3];
-	value[2] = ADC_value[1];
-	value[3] = ADC_value[2];
+	value[1] = ADC_value[1];
+	value[2] = ADC_value[2];
+	value[3] = ADC_value[3];
 
 	//--------------------圆环(beta)-----↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓-----圆环(beta)--------------------//
 	if (enCircle)
 	{
-		if (value[2] > 400 || value[3] > 400)
+		//if (value[2] > 400 || value[1] > 400)
+		if((value[0]>300&&(value[1]<300&&value[2]<300&value[3]<300))|| (value[3]>300 && (value[1]<300 && value[2]<300 & value[0]<300)))
 		{
-			//value[0] = value[1];
-			if (value[2] > 400 && bInCircle == 0)bInCircle = 1;
-			else if (value[3] > 400 && bInCircle == 0)bInCircle = 2;
+			if (value[1] > 350 && bInCircle == 0)bInCircle = 1;
+			else if (value[2] > 350 && bInCircle == 0)bInCircle = 2;
 		}
 		if (bInCircle != 0)
 		{
@@ -45,19 +45,19 @@ float Get_ADC_Err(int *ADC_value)
 			{
 				bInCircle = 0;
 			}
-			if (bInCircle == 1)value[1] = 50;
-			else if (bInCircle == 2)value[0] = 50;
+			if (bInCircle == 1)value[0] = 50;
+			else if (bInCircle == 2)value[3] = 50;
 		}
 	}
 	//--------------------圆环(beta)-----↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑-----圆环(beta)--------------------//
 
 	//感觉没啥用
-	value[0] = (value[0] < 2 ? 2 : value[0]);
-	value[1] = (value[1] < 2 ? 2 : value[1]);
-	value[2] = (value[2] < 2 ? 2 : value[2]);
-	value[3] = (value[3] < 2 ? 2 : value[3]);
+	value[0] = (value[0] < 5 ? 5 : value[0]);
+	value[1] = (value[1] < 5 ? 5 : value[1]);
+	value[2] = (value[2] < 5 ? 5 : value[2]);
+	value[3] = (value[3] < 5 ? 5 : value[3]);
 
-	g_fDirectionError = (float)(value[0] - value[1]) / (value[0] + value[1]);//差比和
+	g_fDirectionError = (float)(value[0] - value[3]) / (value[0] + value[3]);//差比和
 
 	//感觉也没啥用
 	//g_fDirectionError = (g_fDirectionError >= 1 ? 1 : g_fDirectionError);//差比和限幅

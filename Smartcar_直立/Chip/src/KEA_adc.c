@@ -104,4 +104,23 @@ void adc_stop(ADCn_e adcn)
                | ADC_SC1_ADCH(Module0_Dis)               //输入通道选择,此处选择禁止通道
               );
 }
+/**
+*
+*  函数名称：ad_ave
+*  功能说明：多次采样，取平均值
+*  参数说明：ADCx        模块号（ ADC0、 ADC1）
+*            ADC_Channel 通道号
+*            ADC_nbit    精度（ ADC_8bit,ADC_12bit, ADC_10bit, ADC_16bit ）
+*            N           均值滤波次数(范围:0~255)
+*  函数返回：16位无符号结果值
+**/
+uint16 ad_ave(ADCn_Ch_e adcn_ch, ADC_nbit bit, uint8 N) //均值滤波
+{
+	uint32 tmp = 0;
+	uint8  i;
 
+	for (i = 0; i < N; i++)
+		tmp += adc_once(adcn_ch, bit);
+	tmp = tmp / N;
+	return (uint16)tmp;
+}

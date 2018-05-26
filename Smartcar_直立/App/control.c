@@ -13,7 +13,7 @@
 #define ADC_CH3 ADC0_SE15
 
 int motorEncorderL=0,motorEncorderR=0;
-int g_base_speed=20,g_real_speed=0,g_set_speed=120,speedMax=200,dutyMax=500;
+int g_base_speed=20,g_real_speed=0,g_set_speed=120,speedMax=600,dutyMax=600;
 int g_leftThrottle=0,g_rightThrottle=0,loss_line=0;
 extern char KEY_NUM;
 
@@ -21,22 +21,7 @@ extern char KEY_NUM;
 struct pid speed = {5,0.1,0,0,0,0,0};
 struct pid dir = {5,0,50,0,0,0,0};
 
-void Key_init(void)
-{
-	/*????§?????????????é?*/
-	gpio_init(PTI5, GPI, 1);
-	gpio_init(PTI6, GPI, 1);
-	gpio_init(PTD5, GPI, 1);
-	gpio_init(PTD6, GPI, 1);
-	gpio_init(PTD7, GPI, 1);
-	gpio_init(PTC2, GPI, 1);
-	/*????§??????¨????????*/
-	gpio_init(PTC3, GPI, 1);
-	gpio_init(PTB4, GPI, 1);
-	gpio_init(PTB5, GPI, 1);
-	gpio_init(PTE5, GPI, 1);
-
-}unsigned char Key_Scan(void)
+unsigned char Key_Scan(void)
 {
 	uint8 num = 0x00;
 	if (key_get(KEY_A) == KEY_DOWN)
@@ -64,16 +49,10 @@ void Key_init(void)
 
 
 /*
- *  @brief      ????????¨???????????????
- *  @since      v1.0
+*  @brief      速度计算
+*  @since      v1.0
+*	g_real_speed 车辆速度
 */
-uint8 switch_read(void)
-{
-  uint8 data = 0x00;
-  data = (gpio_get(PTC3)) + (gpio_get(PTB4)<<1) + (gpio_get(PTB5)<<2) + (gpio_get(PTE5)<<3);
-  return data;
-}
-
 void Speed_calulate(void)
 {
 	motorEncorderL = ftm_pulse_get(FTM1);
@@ -89,12 +68,33 @@ void Speed_calulate(void)
 	g_real_speed=(motorEncorderL+motorEncorderR)/2.0;
 }
 
+/*
+*  @brief      蜂鸣器控制
+*  @since      v1.0
+*
+*/
+void beep(unsigned char clk)
+{
+	for (int i = 0; i < clk; i++)
+	{
+		gpio_turn(PTD4);
+		systick_delay_ms(50);
+		gpio_turn(PTD4);
+	}
+
+}
+
+/*
+*  @brief      编码器初始化函数
+*  @since      v1.0
+*	FTM0,FTM1做外部计数
+*/
 void Encoder_init(void)
 {
 	gpio_init(PTD2, GPI, 0);
 	gpio_init(PTD3, GPI, 0);
-	ftm_pulse_init(FTM0,FTM_PS_4,PTE7);
-	ftm_pulse_init(FTM1,FTM_PS_4,PTE0);
+	ftm_pulse_init(FTM0,FTM_PS_2,PTE7);
+	ftm_pulse_init(FTM1,FTM_PS_2,PTE0);
 }
 
 void Motor_control(void)

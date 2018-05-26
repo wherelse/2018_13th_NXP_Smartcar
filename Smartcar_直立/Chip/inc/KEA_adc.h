@@ -74,5 +74,6 @@ extern uint16   adc_once    (ADCn_Ch_e, ADC_nbit);      //采集一次一路模拟量的AD
 
 extern void     adc_stop    (ADCn_e);                   //停止ADC转换
 
+extern uint16 ad_ave(ADCn_Ch_e adcn_ch, ADC_nbit bit, uint8 N); //均值滤波
 
 #endif /* __KEA_ADC_H__ */

@@ -29,6 +29,7 @@
 #include  "MPU3050.H"          //MPU3050
 #include  "MMA8451.H"          //MMA8451  此处为陀螺仪加速度计头文件
 
+#include "main.h"
 #include "VCAN_computer.h"
 #include "control.h"
 #include "speed_control.h"
@@ -38,5 +39,5 @@
 #include "BMX055.h"
 #include "Attitude_Calculation.h"
 #include "myiic.h"
-extern float vcan_send_buff[4]; //山外上位机虚拟示波器
+
 #endif  //__INCLUDE_H__

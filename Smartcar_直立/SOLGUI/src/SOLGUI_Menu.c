@@ -20,25 +20,26 @@ extern CURSOR *cursor;	//光标记载
 extern char KEY_NUM;
 extern int adc_value[4];
 extern int flag_run;
-extern int bInCircle;
-extern int enCircle;
 MENU_PAGE UI_MENU,UI_Debug;
 __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 	{
-		SOLGUI_Cursor(6,0,13);
+		SOLGUI_Cursor(6,0,15);
 		SOLGUI_Widget_GotoPage(0,&UI_Debug);
-		SOLGUI_Widget_OptionText(1, "keynum:%d" , bInCircle);
+		SOLGUI_Widget_OptionText(1, "incircle" , bInCircle);
 		SOLGUI_Widget_OptionText(2, "ADC0:%d"   , adc_value[0]);
 		SOLGUI_Widget_OptionText(3, "ADC1:%d"   , adc_value[1]);
 		SOLGUI_Widget_OptionText(4, "ADC2:%d"   , adc_value[2]);
 		SOLGUI_Widget_OptionText(5, "ADC3:%d"   , adc_value[3]);
-		SOLGUI_Widget_OptionText(6, "DirOut:%f", DirOut);
-		SOLGUI_Widget_Spin(7, "Speed", FLT16, -100, 1000, &ExpectSpeed);
-		SOLGUI_Widget_Spin(8, "SpeedOut", FLT16, 0, 2000, &SpeedOut);
-		SOLGUI_Widget_OptionText(9, "Angle=%f", SystemAttitude.Pitch);
-		SOLGUI_Widget_Spin(10, "offset", FLT16, -10000, 10000, &angle_offset);
-		SOLGUI_Widget_Spin(11, "run", INT16, 0, 2, &flag_run);
-		SOLGUI_Widget_Spin(12, "enCircle", INT16, 0, 1, &enCircle);
+		SOLGUI_Widget_Spin(6, "run", INT16, 0, 2, &flag_run);	
+		SOLGUI_Widget_Spin(7, "enCircle", INT16, 0, 1, &enCircle);
+		SOLGUI_Widget_Spin(8, "Speed", FLT16, -100, 1000, &ExpectSpeed);
+		SOLGUI_Widget_Spin(9, "SpeedOut", FLT16, 0, 2000, &SpeedOut);
+		SOLGUI_Widget_Spin(10, "realSpeed", INT16, -1000, 1000, &g_real_speed);
+		SOLGUI_Widget_OptionText(11, "Angle=%f", SystemAttitude.Pitch);
+		SOLGUI_Widget_Spin(12, "offset", FLT16, -10000, 10000, &angle_offset);
+		SOLGUI_Widget_Button(13, "flashsave", flash_savedata);
+		SOLGUI_Widget_OptionText(14, "DirOut:%f", DirOut);
+		SOLGUI_Widget_Spin(15, "enCircle", INT16, 0, 1, &enCircle);
 	});
 
 
@@ -51,7 +52,6 @@ __M_PAGE(UI_Debug, "Debug", &UI_MENU,
 		SOLGUI_Widget_Spin(3, "BKd", FLT16, -1000, 1000, &Balance_Kd);
 		SOLGUI_Widget_Spin(4, "DKp", FLT16, -10000, 10000, &DirKp);
 		SOLGUI_Widget_Spin(5, "DKd", FLT16, -10000, 10000, &DirKd);
-		SOLGUI_Widget_OptionText(6, "DirOut:%f", DirOut);
 	});
 //##############################【内部使用】##############################
 

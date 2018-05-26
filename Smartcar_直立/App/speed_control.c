@@ -13,8 +13,8 @@ float SpeedErrorTemp[5];
 float SpeedOut = 0;
 float SpeedOutNew = 0;
 float SpeedOutOld = 0;
-float Speed_Kp = 6.5;
-float Speed_Ki = 0.15;
+float Speed_Kp = 2.5;
+float Speed_Ki = 0.5;
 float Speed_i = 0;
 int Flag_SpeedControl = 0;
 /*
@@ -57,14 +57,18 @@ void SpeedControl(void)
 	//	static float fSpeedErrorDot = 0;
 	CalSpeedError();
 	if (SpeedErr > 0)
-		SpeedErr = (SpeedErr > 10 ? 10 : SpeedErr);//速度偏差限幅
+		SpeedErr = (SpeedErr > 20 ? 20 : SpeedErr);//速度偏差限幅
 	else
-		SpeedErr = (SpeedErr < -10 ? -10 : SpeedErr);//速度偏差限幅
-	vcan_send_buff[3] = SpeedErr; 
+		SpeedErr = (SpeedErr < -20 ? -20 : SpeedErr);//速度偏差限幅
+	vcan_send_buff[3] = SpeedErr;
 	SpeedOutOld = SpeedOutNew;
 	SpeedOutNew = Speed_Kp * SpeedErr + Speed_Ki*Speed_i;
 	Speed_i += SpeedErr;
-	if (SpeedOutNew > 600)SpeedOutNew = 600;
+	if (SpeedOutNew > speedMax)
+	{
+		SpeedOutNew = speedMax;
+		Speed_i -= SpeedErr;
+	}
 }
 /*
  @ 作者:邓
