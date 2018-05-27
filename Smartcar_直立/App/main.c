@@ -28,7 +28,7 @@ typedef struct
 	float dirkd;
 	float balancekp;
 	float balancekd;
-	float speedmax;
+	int speedmax;
 } my_data_t;
 
 flash_data_t data;
@@ -228,8 +228,9 @@ void flash_saveinit(void)
 	mydata.balancekp = 75;
 	mydata.balancekd = 3;
 	mydata.speedmax = 600;
+        
 	//这部分是配置 flash 保存参数
-	data.sectornum_start = FLASH_SECTOR_NUM - 3;     //起始扇区      用最后的3个扇区来作为保存参数
+	data.sectornum_start = FLASH_SECTOR_NUM - 4;     //起始扇区      用最后的3个扇区来作为保存参数
 	data.sectornum_end = FLASH_SECTOR_NUM - 1;       //结束扇区
 
 	data.data_addr = &mydata;                          //数据的地址
@@ -260,6 +261,7 @@ void flash_savedata(void)
 	mydata.balancekp = Balance_Kp;
 	mydata.balancekd = Balance_Kd;
 	mydata.speedmax = speedMax;
+        
 	data.data_addr = &mydata;                          //数据的地址
 	data.data_size = sizeof(mydata);                  //数据的大小
 	flash_data_save(&data);
@@ -285,5 +287,6 @@ void flash_loaddata(void)
 	DirKd = mydata.dirkd;
 	Balance_Kp = mydata.balancekp;
 	Balance_Kd = mydata.balancekd;
+        speedMax = mydata.speedmax;
 
 }

@@ -39,7 +39,6 @@ __M_PAGE(UI_MENU, "SmartCar", PAGE_NULL,
 		SOLGUI_Widget_Spin(12, "offset", FLT16, -10000, 10000, &angle_offset);
 		SOLGUI_Widget_Button(13, "flashsave", flash_savedata);
 		SOLGUI_Widget_OptionText(14, "DirOut:%f", DirOut);
-		SOLGUI_Widget_Spin(15, "enCircle", INT16, 0, 1, &enCircle);
 	});
 
 
@@ -47,11 +46,12 @@ __M_PAGE(UI_Debug, "Debug", &UI_MENU,
 	{
 		SOLGUI_Cursor(6,0,16);
 		SOLGUI_Widget_Spin(0, "SKp", FLT16, -100, 100, &Speed_Kp);
-        SOLGUI_Widget_Spin(1, "SKi", FLT16, -100, 100, &Speed_Ki);
+                SOLGUI_Widget_Spin(1, "SKi", FLT16, -100, 100, &Speed_Ki);
 		SOLGUI_Widget_Spin(2, "BKp", FLT16, -1000, 1000, &Balance_Kp);
 		SOLGUI_Widget_Spin(3, "BKd", FLT16, -1000, 1000, &Balance_Kd);
 		SOLGUI_Widget_Spin(4, "DKp", FLT16, -10000, 10000, &DirKp);
 		SOLGUI_Widget_Spin(5, "DKd", FLT16, -10000, 10000, &DirKd);
+                SOLGUI_Widget_Spin(6, "Speedmax", INT16, -1000, 1000, &speedMax);
 	});
 //##############################【内部使用】##############################
 
