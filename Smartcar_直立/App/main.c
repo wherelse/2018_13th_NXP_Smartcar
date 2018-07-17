@@ -29,6 +29,7 @@ typedef struct
 	float balancekp;
 	float balancekd;
 	int speedmax;
+	int circlevalue;
 } my_data_t;
 
 flash_data_t data;
@@ -119,7 +120,8 @@ void pit1_irq(void)
 	SOLGUI_InputKey(key_value);
 	SOLGUI_Menu_PageStage(); //
 	SOLGUI_Refresh();        //OLED刷新
-	if (key_get(Switch4) == 0) OLED_Fill(0x00);
+	if (key_get(Switch4) == 0)
+		OLED_Fill(0x00);       
 	PIT_Flag_Clear(PIT1);
 
 }
@@ -187,17 +189,17 @@ void main(void)
 
 	for (;;)
 	{
-		adc_value[0] = ad_ave(ADC0_SE12, ADC_10bit,10);
-		adc_value[1] = ad_ave(ADC0_SE13, ADC_10bit,10);
-		adc_value[2] = ad_ave(ADC0_SE14, ADC_10bit,10);
-		adc_value[3] = ad_ave(ADC0_SE15, ADC_10bit,10);
+//		adc_value[0] = ad_ave(ADC0_SE12, ADC_10bit,10);
+//		adc_value[1] = ad_ave(ADC0_SE13, ADC_10bit,10);
+//		adc_value[2] = ad_ave(ADC0_SE14, ADC_10bit,10);
+//		adc_value[3] = ad_ave(ADC0_SE15, ADC_10bit,10);
                 
 		if (adc_value[0] < 10 && adc_value[1] < 10 && adc_value[2] < 10 && adc_value[3] < 10  )
 		{
 			flag_run = 0;//出赛道停车判断
 		}
 
-		//if (bInCircle == 1 || bInCircle == 2)beep(1);
+		if (bInCircle == 1 || bInCircle == 2)beep(1);
 		//if(g_AngleOfCar>300|| g_AngleOfCar<-800 )flag_run = 0;
 		//vcan_send_buff[0] = g_AngleOfCar;
 		//vcan_send_buff[0] = AccZAngle;
@@ -230,8 +232,8 @@ void flash_saveinit(void)
 	mydata.speedmax = 600;
         
 	//这部分是配置 flash 保存参数
-	data.sectornum_start = FLASH_SECTOR_NUM - 4;     //起始扇区      用最后的3个扇区来作为保存参数
-	data.sectornum_end = FLASH_SECTOR_NUM - 1;       //结束扇区
+	data.sectornum_start = FLASH_SECTOR_NUM - 9;     //起始扇区      用最后的3个扇区来作为保存参数
+	data.sectornum_end = FLASH_SECTOR_NUM - 4;       //结束扇区
 
 	data.data_addr = &mydata;                          //数据的地址
 	data.data_size = sizeof(mydata);                  //数据的大小
@@ -245,7 +247,7 @@ void flash_saveinit(void)
 	//一开始，不知道数据是否有效的
 //	if (flash_data_load(&data))
 //	{
-//		//加载最后一次存储的数据成功
+//		OLED_P8x16Str(100,0,0,"0"); //加载最后一次存储的数据成功
 //	}
 }
 	 //一般情况下，我们不需要调用 flash_data_reset 来清空，除非你不想要 flash的数据。
@@ -261,7 +263,11 @@ void flash_savedata(void)
 	mydata.balancekp = Balance_Kp;
 	mydata.balancekd = Balance_Kd;
 	mydata.speedmax = speedMax;
+	mydata.circlevalue = cicle_value;
+    //flash_data_reset(&data);
         
+   // data.sectornum_start = FLASH_SECTOR_NUM - 4;     //起始扇区      用最后的3个扇区来作为保存参数
+	//data.sectornum_end = FLASH_SECTOR_NUM - 1;       //结束扇区
 	data.data_addr = &mydata;                          //数据的地址
 	data.data_size = sizeof(mydata);                  //数据的大小
 	flash_data_save(&data);
@@ -273,12 +279,12 @@ void flash_loaddata(void)
 
 	mydata.speedkp = 2.5;
 	mydata.speedki = 0.5;
-	mydata.dirkp = 400;
-	mydata.dirkd = 250;
+	mydata.dirkp = 900;
+	mydata.dirkd = 800;
 	mydata.balancekp = 75;
 	mydata.balancekd = 3;
 	mydata.speedmax = 600;
-
+	mydata.circlevalue = 600;
 	flash_data_load(&data);
 
 	Speed_Kp = mydata.speedkp;
@@ -287,6 +293,7 @@ void flash_loaddata(void)
 	DirKd = mydata.dirkd;
 	Balance_Kp = mydata.balancekp;
 	Balance_Kd = mydata.balancekd;
-        speedMax = mydata.speedmax;
+    speedMax = mydata.speedmax;
+	cicle_value = mydata.circlevalue;
 
 }

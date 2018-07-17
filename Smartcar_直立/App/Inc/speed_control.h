@@ -10,4 +10,5 @@ extern float SpeedOutNew;
 extern float Speed_Kp;
 extern float ExpectSpeed;
 extern float Speed_Ki;
+extern int speed_adjust;
 #endif

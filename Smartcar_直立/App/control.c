@@ -80,6 +80,7 @@ void beep(unsigned char clk)
 		gpio_turn(PTD4);
 		systick_delay_ms(50);
 		gpio_turn(PTD4);
+                systick_delay_ms(50);
 	}
 
 }
@@ -93,8 +94,8 @@ void Encoder_init(void)
 {
 	gpio_init(PTD2, GPI, 0);
 	gpio_init(PTD3, GPI, 0);
-	ftm_pulse_init(FTM0,FTM_PS_2,PTE7);
-	ftm_pulse_init(FTM1,FTM_PS_2,PTE0);
+	ftm_pulse_init(FTM0,FTM_PS_1,PTE7);
+	ftm_pulse_init(FTM1,FTM_PS_1,PTE0);
 }
 
 void Motor_control(void)
